@@ -592,7 +592,7 @@ def call_callback_data(call):
         databases.update_table_admin_group(cid,int(data[-1]),"city",data[3])
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("تایید",callback_data=f"confirm_{data[2]}_{data[3]}_{data[-1]}"))
-        markup.add(InlineKeyboardButton("تغییر کشور و شهر",callback_data=f"change_country"))
+        markup.add(InlineKeyboardButton("تغییر کشور و شهر",callback_data=f"change_country_{data[-1]}"))
         bot.edit_message_text(f"شما کشور {data[2]} و شهر {data[3]} را اانتخاب کردید.", cid, message_id=mid, reply_markup=markup)
 
 
