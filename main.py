@@ -5,33 +5,32 @@ import databases
 from datetime import datetime
 import threading
 from config import *
-admins=975427911
+admins=748626808#975427911
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
 chanal_base=-1002029203141
 userstep=0
 dict_channel={} #{"name":"utl"}
 databases.creat_database_tables()
-# def listener(messages):
-#     """
-#     When new messages arrive TeleBot will call this function.
-#     """
-#     for m in messages:
-#         print(m)
-#         cid = m.chat.id
-#         if m.content_type == 'text':
-#             print(str(m.chat.first_name) +
-#                   " [" + str(m.chat.id) + "]: " + m.text)
-#         elif m.content_type == 'photo':
-#             print(str(m.chat.first_name) +
-#                   " [" + str(m.chat.id) + "]: " + "New photo recieved")
-#         elif m.content_type == 'document':
-#             print(str(m.chat.first_name) +
-#                   " [" + str(m.chat.id) + "]: " + 'New Document recieved')
+def listener(messages):
+    """
+    When new messages arrive TeleBot will call this function.
+    """
+    for m in messages:
+        cid = m.chat.id
+        if m.content_type == 'text':
+            print(str(m.chat.first_name) +
+                  " [" + str(m.chat.id) + "]: " + m.text)
+        elif m.content_type == 'photo':
+            print(str(m.chat.first_name) +
+                  " [" + str(m.chat.id) + "]: " + "New photo recieved")
+        elif m.content_type == 'document':
+            print(str(m.chat.first_name) +
+                  " [" + str(m.chat.id) + "]: " + 'New Document recieved')
 
 
 bot = telebot.TeleBot(TOKEN,num_threads=3)
-# bot.set_update_listener(listener)
+bot.set_update_listener(listener)
 
 
 def admin_group(cid):
@@ -102,13 +101,14 @@ def command_start(m):
 @bot.message_handler(commands=['panel'])
 def command_start_p(m):
     cid = m.chat.id
-    if cid == admins:
-        keypanel = InlineKeyboardMarkup()
-        keypanel.add(InlineKeyboardButton('آمار',callback_data='panel_amar'))
-        keypanel.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-        keypanel.add(InlineKeyboardButton('ارسال به گروه ها',callback_data='panel_brgp'),InlineKeyboardButton('فوروارد به گروه ها',callback_data='panel_forgp'))
-        keypanel.add(InlineKeyboardButton("تنظیمات دکمه های اذان",callback_data='setting'))
-        bot.send_message(cid,'سلام ادمین گرامی خوش امدید لطفا انتخاب کنید',reply_markup=keypanel)
+    if m.chat.type =="private":
+        if cid == admins:
+            keypanel = InlineKeyboardMarkup()
+            keypanel.add(InlineKeyboardButton('آمار',callback_data='panel_amar'))
+            keypanel.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
+            keypanel.add(InlineKeyboardButton('ارسال به گروه ها',callback_data='panel_brgp'),InlineKeyboardButton('فوروارد به گروه ها',callback_data='panel_forgp'))
+            keypanel.add(InlineKeyboardButton("تنظیمات دکمه های اذان",callback_data='setting'))
+            bot.send_message(cid,'سلام ادمین گرامی خوش امدید لطفا انتخاب کنید',reply_markup=keypanel)
 
 
 @bot.message_handler(func=lambda m: m.chat.type == 'group' or m.chat.type == 'supergroup' and m.text=="نصب")
@@ -160,46 +160,47 @@ def panel_set_photo(m):
     global userstep
     cid = m.chat.id
     mid = m.message_id
-    text=m.text
-    if userstep==1:
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_brodcast_{mid}"))
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,"پیام شما دریافت شد برای ارسال همگانی تایید را بزنید",reply_markup=markup)
-        userstep=0
-    elif userstep==2:
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_forall_{mid}"))
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,"پیام شما دریافت شد برای فوروارد همگانی تایید را بزنید",reply_markup=markup)
-        userstep=0
-    elif userstep==3:
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_brgp_{mid}"))
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,"پیام شما دریافت شد برای ارسال به گروه ها تایید را بزنید",reply_markup=markup)  
-        userstep=0  
-    elif userstep==4:
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_forgp_{mid}"))
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,"پیام شما دریافت شد برای فوروارد به گروه ها تایید را بزنید",reply_markup=markup) 
-        userstep=0
-    elif userstep==10:
-        dict_channel.setdefault(text,"")   
-        bot.send_message(cid,"اسم دکمه اضافه شد حالا برای ساخت دکمه لینک گروه را ارسال کنید")
-        userstep=20
-    elif userstep==20:
-        for i in dict_channel:
-            if dict_channel[i]=="":
-                dict_channel[i]=text
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,"دکمه اضافه شد",reply_markup=markup)
-        userstep=0
-    else:
-        bot.send_message(cid,"مقدار وارد شده نامعتبر است لطفا طبق دستور /start مجددا امتحان کنید")   
-        userstep=0
+    if m.chat.type=="private":
+        text=m.text
+        if userstep==1:
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_brodcast_{mid}"))
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.send_message(cid,"پیام شما دریافت شد برای ارسال همگانی تایید را بزنید",reply_markup=markup)
+            userstep=0
+        elif userstep==2:
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_forall_{mid}"))
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.send_message(cid,"پیام شما دریافت شد برای فوروارد همگانی تایید را بزنید",reply_markup=markup)
+            userstep=0
+        elif userstep==3:
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_brgp_{mid}"))
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.send_message(cid,"پیام شما دریافت شد برای ارسال به گروه ها تایید را بزنید",reply_markup=markup)  
+            userstep=0  
+        elif userstep==4:
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_forgp_{mid}"))
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.send_message(cid,"پیام شما دریافت شد برای فوروارد به گروه ها تایید را بزنید",reply_markup=markup) 
+            userstep=0
+        elif userstep==10:
+            dict_channel.setdefault(text,"")   
+            bot.send_message(cid,"اسم دکمه اضافه شد حالا برای ساخت دکمه لینک گروه را ارسال کنید")
+            userstep=20
+        elif userstep==20:
+            for i in dict_channel:
+                if dict_channel[i]=="":
+                    dict_channel[i]=text
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.send_message(cid,"دکمه اضافه شد",reply_markup=markup)
+            userstep=0
+        else:
+            bot.send_message(cid,"مقدار وارد شده نامعتبر است لطفا طبق دستور /start مجددا امتحان کنید")   
+            userstep=0
 
 
 
@@ -664,6 +665,7 @@ def call_callback_time(call):
 
 def check_and_notify_thread():
     while True:
+        print("ok")
         dict_ii=databases.select_all_info()
         for c in dict_ii:
             bot_user_id=bot.get_me().id
@@ -693,16 +695,19 @@ def check_and_notify_thread():
 
         rows = databases.select_all_info()
         dict_code_message={"Fajr":4,"Dhuhr":5,"Asr":6,"Maghrib":7,"Isha":8}
-        current_time = datetime.now().strftime("%H:%M")
+        current_time ="05:25" #datetime.now().strftime("%H:%M")
+        print(rows)
         for row in rows:
+            
             for i in ["Fajr","Dhuhr","Maghrib","Asr","Isha"]:
+                print(row[i])
                 if row[i] != "None":
                     if current_time == row[i]:
                         try:
                             bot.copy_message(row["chat_id"],chanal_base,dict_code_message[i],reply_markup=setting_markup())
                         except:
                             print("left")
-        threading.Event().wait(45)
+        threading.Event().wait(55)
 
 
 check_thread = threading.Thread(target=check_and_notify_thread)
