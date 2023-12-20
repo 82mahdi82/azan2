@@ -226,7 +226,7 @@ def call_callback_panel_sends(call):
             except:
                 databases.delete_users(i)
                 count_black+=1
-                print("eror")
+                # print("eror")
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         text=f"به {count} نفر ارسال شد"
@@ -242,7 +242,7 @@ def call_callback_panel_sends(call):
             except:
                 databases.delete_users(i)
                 count_black+=1
-                print("eror")
+                # print("eror")
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         text=f"به {count} نفر ارسال شد"
@@ -256,7 +256,8 @@ def call_callback_panel_sends(call):
                 bot.copy_message(i["chat_id"],cid,int(data[-1]))
                 count+=1
             except:
-                print("eror")
+                pass
+                # print("eror")
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         bot.edit_message_text(f"به {count} گروه ارسال شد",cid,mid,reply_markup=markup)
@@ -267,7 +268,8 @@ def call_callback_panel_sends(call):
                 bot.forward_message(i["chat_id"],cid,int(data[-1]))
                 count+=1
             except:
-                print("eror")
+                pass
+                # print("eror")
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         bot.edit_message_text(f"به {count} گروه فوروارد شد",cid,mid,reply_markup=markup)
@@ -590,7 +592,7 @@ def call_callback_data(call):
         databases.update_table_admin_group(cid,int(data[-1]),"city",data[3])
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("تایید",callback_data=f"confirm_{data[2]}_{data[3]}_{data[-1]}"))
-        markup.add(InlineKeyboardButton("تغییر کشور و شهر",callback_data=f"select_country_{data[-1]}"))
+        markup.add(InlineKeyboardButton("تغییر کشور و شهر",callback_data=f"change_country"))
         bot.edit_message_text(f"شما کشور {data[2]} و شهر {data[3]} را اانتخاب کردید.", cid, message_id=mid, reply_markup=markup)
 
 
@@ -711,7 +713,8 @@ def check_and_notify_thread():
                         try:
                             bot.copy_message(row["chat_id"],chanal_base,dict_code_message[i],reply_markup=setting_markup())
                         except:
-                            print("left")
+                            pass
+                            # print("left")
         threading.Event().wait(55)
 
 
