@@ -1,4 +1,5 @@
 import telebot
+import pytz
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 import azan
 import databases
@@ -114,7 +115,11 @@ def command_start_p(m):
 @bot.message_handler(func=lambda m: m.chat.type == 'group' or m.chat.type == 'supergroup' and m.text=="نصب")
 def install_robot(m):
     group_id = m.chat.id
+    cid=m.from_user.id
     bot_info=bot.get_me()
+    chat_member = bot.get_chat_member(group_id, cid)
+    if chat_member.status=="member":
+        return
     markup=InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton("تنظیمات ربات",url=f"https://t.me/{bot_info.username}/?start=setting"))
     bot.copy_message(group_id,chanal_base,11,reply_markup=markup,reply_to_message_id=m.message_id)
@@ -151,7 +156,7 @@ def is_user_member(user_id, channel_id):
         chat_member = bot.get_chat_member(channel_id, user_id)
         return chat_member.status == "member" or chat_member.status == "administrator" or chat_member.status == "creator"
     except Exception as e:
-        print(f"Error checking membership: {e}")
+        #print(f"Error checking membership: {e}")
         return False
 
 
@@ -695,12 +700,12 @@ def check_and_notify_thread():
 
         rows = databases.select_all_info()
         dict_code_message={"Fajr":4,"Dhuhr":5,"Asr":6,"Maghrib":7,"Isha":8}
-        current_time =datetime.now().strftime("%H:%M")
-        print(rows)
-        for row in rows:
-            
+        current_utc_time = datetime.now(pytz.utc)
+        tehran_timezone = pytz.timezone('Asia/Tehran')
+        current_time = current_utc_time.astimezone(tehran_timezone).strftime("%H:%M")
+        # current_time =datetime.now().strftime("%H:%M")
+        for row in rows:          
             for i in ["Fajr","Dhuhr","Maghrib","Asr","Isha"]:
-                print(row[i])
                 if row[i] != "None":
                     if current_time == row[i]:
                         try:
