@@ -695,7 +695,7 @@ def check_and_notify_thread():
 
         rows = databases.select_all_info()
         dict_code_message={"Fajr":4,"Dhuhr":5,"Asr":6,"Maghrib":7,"Isha":8}
-        current_time ="05:25" #datetime.now().strftime("%H:%M")
+        current_time =datetime.now().strftime("%H:%M")
         print(rows)
         for row in rows:
             
