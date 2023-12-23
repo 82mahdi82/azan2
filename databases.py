@@ -18,7 +18,7 @@ def use_table_admin_group(cid):
 def insert_table_admin_group(cid,chat_id,title):
     connect = sqlite3.connect("data.db")
     cur = connect.cursor()
-    cur.execute(f"insert into admin_group (cid,chat_id,title) values ({cid},{chat_id},'{title}')")
+    cur.execute(f"""insert into admin_group (cid,chat_id,title) values ({cid},{chat_id},"{title}")""")
     connect.commit()
     connect.close()
 

@@ -44,8 +44,8 @@ def admin_group(cid):
 @bot.message_handler(commands=['start'])
 def command_start(m):
     cid = m.chat.id
-    databases.insert_users(cid)
     if m.chat.type == 'private':
+        databases.insert_users(cid)
         if admin_group(cid)==False :
             is_member_channel1 = is_user_member(cid,channel1_id)
             is_member_channel2 = is_user_member(cid, channel2_id)
