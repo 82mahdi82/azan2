@@ -52,7 +52,7 @@ def use_users():
 def update_table_admin_group(cid,chat_id,what,amount):
     connect = sqlite3.connect("data.db")
     cur = connect.cursor()
-    cur.execute(f"update admin_group set '{what}'='{amount}' where cid={cid} and chat_id={chat_id}")
+    cur.execute(f"""update admin_group set "{what}"="{amount}" where cid={cid} and chat_id={chat_id}""")
     connect.commit()
     connect.close()
 
