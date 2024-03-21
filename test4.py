@@ -10,7 +10,7 @@ def login():
     firfox_op=Options()
     firfox_op.add_argument("--headless")
     # firfox_op.add_argument("--disable-gpu")
-    log_file = "geckodriver-v0.34.0-linux-aarch64.tar.gz.asc"
+    log_file = "geckodriver"
     service = Service(log_output=log_file)
     driver = webdriver.Firefox(service=service,options=firfox_op)
 
