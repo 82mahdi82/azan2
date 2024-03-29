@@ -216,6 +216,7 @@ def call_callback_panel_amar(call):
 
 @bot.message_handler(commands=['start'])
 def command_start(m):
+    global admins
     cid = m.chat.id
     if admins==0:
         admins=cid
