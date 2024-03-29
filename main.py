@@ -5,9 +5,8 @@ import databases
 import datetime
 import pytz
 
-admins=748626808#975427911
-TOKEN ='6317356905:AAGQ2p8Lo0Kc4mkChTmE7ZbI2p1bzw9cIO8'#'6903346134:AAFVD5vdQDRZ5hZ6m1LlBj2C14Y5PeS6HsQ'#'6317356905:AAGQ2p8Lo0Kc4mkChTmE7ZbI2p1bzw9cIO8'
-# chanal_base=-1002029203141
+admins=0
+TOKEN ='6317356905:AAGQ2p8Lo0Kc4mkChTmE7ZbI2p1bzw9cIO8'
 
 chanal_target={}
 userStep={}
@@ -100,7 +99,7 @@ def menu(call):
     markup=InlineKeyboardMarkup()
     num=1
     for i in chanal_target:
-        markup.add(InlineKeyboardButton(f"کانال {num}",callback_data=f"joinchanel_{i}"))
+        markup.add(InlineKeyboardButton(f"کانال {num}",url=f"{chanal_target[i][1]}"))
         num+=1
     markup.add(InlineKeyboardButton("نمایش موجودی",callback_data="show"))
     markup.add(InlineKeyboardButton("ارسال شماره کارت برای ادمین",callback_data="senumcart"))
@@ -201,7 +200,7 @@ def call_callback_panel_amar(call):
             for i in chanal_target:
                 markup=InlineKeyboardMarkup()
                 markup.add(InlineKeyboardButton("حذف کانال",callback_data=f"delete_{i}"))
-                bot.send_message(cid,f"اسم کانال: {chanal_target[i]}")
+                bot.send_message(cid,f"اسم کانال: {chanal_target[i][0]}",reply_markup=markup)
                 
     elif data=="add":
         markup=InlineKeyboardMarkup()
@@ -218,6 +217,8 @@ def call_callback_panel_amar(call):
 @bot.message_handler(commands=['start'])
 def command_start(m):
     cid = m.chat.id
+    if admins==0:
+        admins=cid
     if cid!=admins:
         databases.insert_users(cid,m.chat.first_name)
     dict_user_budget.setdefault(cid,0)
@@ -232,7 +233,7 @@ def command_start(m):
         markup=InlineKeyboardMarkup()
         num=1
         for i in chanal_target:
-            markup.add(InlineKeyboardButton(f"کانال {num}",callback_data=f"joinchanel_{i}"))
+            markup.add(InlineKeyboardButton(f"کانال {num}",url=f"{chanal_target[i][1]}"))
             num+=1
         markup.add(InlineKeyboardButton("نمایش موجودی",callback_data="show"))
         markup.add(InlineKeyboardButton("ارسال شماره کارت برای ادمین",callback_data="senumcart"))
@@ -248,7 +249,10 @@ def add_new_chanel(m):
     cid = m.chat.id
     print(m)
     if m.forward_from_chat.id not in chanal_target:
-        chanal_target.setdefault(int(m.forward_from_chat.id),m.forward_from_chat.title)
+        # bot.send_message(int(m.forward_from_chat.id), 'hi')
+        link=bot.export_chat_invite_link(chat_id=int(m.forward_from_chat.id))
+        chanal_target.setdefault(int(m.forward_from_chat.id),[m.forward_from_chat.title,link])
+        print("link",link)
         bot.send_message(cid,"کانال اضافه شد")
     else:
         bot.send_message(cid,"این کانال قبلا اضافه شده است")
@@ -297,6 +301,7 @@ def panel_set_photo(m):
             bot.send_message(cid,"مقدار وارد شده نامعتبر است لطفا طبق دستور /start مجددا امتحان کنید")   
             userStep[cid]=0
 def check_and_notify_thread():
+    global block_list
     while True:
         current_utc_time = datetime.datetime.now(pytz.utc)
         tehran_timezone = pytz.timezone('Asia/Tehran')
@@ -304,7 +309,7 @@ def check_and_notify_thread():
         if current_time=="00:01":
             list_user=databases.use_users()
             for user in list_user:
-                if user not in block_list:
+                if user[0] not in block_list:
                     for chanel in chanal_target:
                         if is_user_member(user[0],chanel):
                             dict_user_budget[int(user[0])]+=5
@@ -313,7 +318,7 @@ def check_and_notify_thread():
                     if dict_user_budget[int(user[0])]==100:
                         markup=InlineKeyboardMarkup()
                         markup.add(InlineKeyboardButton("بازگشت به منو",callback_data="menu"))
-                        bot.send_message(int(user[0]),"لطفا شماره کارت خود را ارسال کنید:",reply_markup=markup)
+                        bot.send_message(int(user[0]),"لطفا شماره کارت خود را برای دریافت پول ارسال کنید:",reply_markup=markup)
                         userStep[int(user)]=100
 
         if current_time=="00:05":
