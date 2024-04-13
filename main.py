@@ -1,20 +1,138 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
-import threading
+from datetime import datetime
+from googletrans import Translator
+import test
+import nltk_def
+import os
+import fontic
 import databases
-import datetime
-import pytz
+import sait
 
-admins=0
-TOKEN ='6317356905:AAGQ2p8Lo0Kc4mkChTmE7ZbI2p1bzw9cIO8'
+TOKEN ='7018847010:AAEMTrqs7mZRwxyaXE_XUgbyYPYzl_Twt3M'
 
-chanal_target={}
+admin=0#748626808
+channel1_id = -1002016755212  # Replace with your channel1 ID
+channel2_id = -1001992750806  # Replace with your channel2 ID
+chanal_base=-1002029203141
 userStep={}
-dict_user_budget={}#cid:5
-block_list=[]
-user_id_payment=0
+dict_channel={} #{"name":"utl"}
+text_fot_trean={}#cid:text
+dict_synonym={}
+dict_opposite={}
+languages = {
+    'فارسی': 'fa',
+    'انگلیسی': 'en',
+    'آلمانی': 'de',
+    'پرتغالی': 'pt',
+    'افریکانس': 'af',
+    'البانیایی': 'sq',
+    'امهری': 'am',
+    'عربی': 'ar',
+    'ارمنی': 'hy',
+    'آذربایجانی': 'az',
+    'باسکی': 'eu',
+    'بلاروسی': 'be',
+    'بنگالی': 'bn',
+    'بوسنیایی': 'bs',
+    'بلغاری': 'bg',
+    'کاتالان': 'ca',
+    'سبوآنو': 'ceb',
+    'چیچوا': 'ny',
+    'چینی (ساده شده)': 'zh-cn',
+    'چینی (سنتی)': 'zh-tw',
+    'کرسی': 'co',
+    'کرواتی': 'hr',
+    'چک': 'cs',
+    'دانمارکی': 'da',
+    'هلندی': 'nl',
+    'اسپرانتو': 'eo',
+    'استونیایی': 'et',
+    'فیلیپینی': 'tl',
+    'فنلاندی': 'fi',
+    'فرانسوی': 'fr',
+    'فریسی': 'fy',
+    'گالیسیایی': 'gl',
+    'گرجی': 'ka',
+    'یونانی': 'el',
+    'گجراتی': 'gu',
+    'کریول هائیتی': 'ht',
+    'هوسا': 'ha',
+    'هاوایی': 'haw',
+    'عبری': 'iw',
+    'هندی': 'hi',
+    'همونگ': 'hmn',
+    'مجاری': 'hu',
+    'ایسلندی': 'is',
+    'ایبو': 'ig',
+    'اندونزیایی': 'id',
+    'ایرلندی': 'ga',
+    'ایتالیایی': 'it',
+    'ژاپنی': 'ja',
+    'جاوه‌ای': 'jw',
+    'کانارا': 'kn',
+    'قزاقی': 'kk',
+    'خمر': 'km',
+    'کره‌ای': 'ko',
+    'کردی (کورمانجی)': 'ku',
+    'قرقیزی': 'ky',
+    'لائو': 'lo',
+    'لاتین': 'la',
+    'لتونیایی': 'lv',
+    'لیتوانیایی': 'lt',
+    'لوکزامبورگی': 'lb',
+    'مقدونی': 'mk',
+    'مالاگاسی': 'mg',
+    'مالایی': 'ms',
+    'مالایالام': 'ml',
+    'مالتی': 'mt',
+    'مائوری': 'mi',
+    'مراتی': 'mr',
+    'مغولی': 'mn',
+    'میانمار (برمه‌ای)': 'my',
+    'نپالی': 'ne',
+    'نروژی': 'no',
+    'اودیا': 'or',
+    'پشتو': 'ps',
+    'لهستانی': 'pl',
+    'پنجابی': 'pa',
+    'رومانیایی': 'ro',
+    'روسی': 'ru',
+    'ساموآیی': 'sm',
+    'اسکاتلندی گیلیک': 'gd',
+    'صربی': 'sr',
+    'سوتویی': 'st',
+    'شونایی': 'sn',
+    'سندی': 'sd',
+    'سینهالا': 'si',
+    'اسلواکی': 'sk',
+    'اسلوونیایی': 'sl',
+    'سومالیایی': 'so',
+    'اسپانیایی': 'es',
+    'سوندانی': 'su',
+    'سواحلی': 'sw',
+    'سوئدی': 'sv',
+    'تاجیکی': 'tg',
+    'تامیلی': 'ta',
+    'تلوگو': 'te',
+    'تایلندی': 'th',
+    'ترکی': 'tr',
+    'اوکراینی': 'uk',
+    'اردو': 'ur',
+    'اویغوری': 'ug',
+    'ازبکی': 'uz',
+    'ویتنامی': 'vi',
+    'ولزی': 'cy',
+    'خوسایی': 'xh',
+    'یدیش': 'yi',
+    'یوروبا': 'yo',
+    'زولو': 'zu'
+}
 
-databases.creat_database_tables()
+def detect_language(text):
+    translator = Translator()
+    result = translator.detect(text)
+    return result.lang
 
 def listener(messages):
     """
@@ -32,16 +150,17 @@ def listener(messages):
             print(str(m.chat.first_name) +
                   " [" + str(m.chat.id) + "]: " + 'New Document recieved')
 
+
+bot = telebot.TeleBot(TOKEN,num_threads=3)
+bot.set_update_listener(listener)
+
+#-----------------------------------------------------------------def----------------------------------------------------------
 def get_user_step(uid):
     if uid in userStep:
         return userStep[uid]
     else:
         userStep[uid] = 0
         return 0
-
-bot = telebot.TeleBot(TOKEN)
-bot.set_update_listener(listener)
-
 def is_user_member(user_id, channel_id):
     try:
         chat_member = bot.get_chat_member(channel_id, user_id)
@@ -49,285 +168,232 @@ def is_user_member(user_id, channel_id):
     except Exception as e:
         #print(f"Error checking membership: {e}")
         return False
+    
 
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith("delete"))
-def delete_chanel(call):
-    cid = call.message.chat.id
-    mid = call.message.message_id
-    chanelid=int(call.data.split("_")[-1])
-    chanal_target.pop(chanelid)
-    bot.delete_message(cid,mid)
-    bot.answer_callback_query(call.id,"کانال حذف شد")
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith("show"))
-def show_money(call):
-    cid = call.message.chat.id
-    mid = call.message.message_id
-    markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("بازگشت به منو",callback_data="menu"))
-    bot.send_message(cid,f"موجودی شما : {dict_user_budget[cid]} تومان است",reply_markup=markup)
-@bot.callback_query_handler(func=lambda call: call.data.startswith("payment"))
-def payment_admin(call):
-    global user_id_payment
-    cid = call.message.chat.id
-    user_id=int(call.message.text.split("\n")[0])
-    user_id_payment=user_id
-    mid = call.message.message_id
-    markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-    bot.send_message(cid,"ادمین گرامی لطفا پس از کارت به کارت عکس رسید را ارسال کنید",reply_markup=markup)
-    userStep[cid]=200
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith("senumcart"))
-def call_callback_panel_senumcart(call):
-    cid = call.message.chat.id
-    mid = call.message.message_id
-    if dict_user_budget[cid]>=100:
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به منو",callback_data="menu"))
-        bot.send_message(int(cid),"لطفا شماره کارت خود را ارسال کنید:",reply_markup=markup)
-        userStep[cid]=100
+#------------------------------------------------------commands-------------------------------------------------
+@bot.message_handler(commands=['start'])
+def command_start(m):
+    cid = m.chat.id
+    text_fot_trean.setdefault(cid,"")
+    if cid != admin:
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("ترجمه")
+        markup.add("مترادف","متضاد")
+        bot.send_message(cid,f"""
+سلام {m.chat.first_name} عزیز 
+به ربات مترجم خوش آمدید
+لطفا برای استفاده از ربات یکی از گزینه های زیر را انتخاب کنید
+""",reply_markup=markup)
     else:
-        bot.answer_callback_query(call.id,"برای دریافت پول باید حداقل موجودی شما 100 تومن باشد")
+        markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
+        markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
+        bot.send_message(cid,"""
+سلام ادمین گرامی 
+برای مدیریت بازی از دکمه های زیر استفاده کنید
+""",reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith("menu"))
-def menu(call):
-    cid = call.message.chat.id
-    mid = call.message.message_id
-    userStep[cid]=0
-    markup=InlineKeyboardMarkup()
-    num=1
-    for i in chanal_target:
-        markup.add(InlineKeyboardButton(f"کانال {num}",url=f"{chanal_target[i][1]}"))
-        num+=1
-    markup.add(InlineKeyboardButton("نمایش موجودی",callback_data="show"))
-    markup.add(InlineKeyboardButton("ارسال شماره کارت برای ادمین",callback_data="senumcart"))
-    bot.send_message(cid,"منو",reply_markup=markup)
-@bot.callback_query_handler(func=lambda call: call.data.startswith("back"))
-def call_callback_panel_amar(call):
-    global user_id_payment
-    cid = call.message.chat.id
-    mid = call.message.message_id
-    user_id_payment=0
-    userStep[cid]=0
-    keypanel = InlineKeyboardMarkup()
-    keypanel.add(InlineKeyboardButton('آمار کلی',callback_data='panel_amar'),InlineKeyboardButton("آمار جزئی",callback_data='panel_info'))
-    keypanel.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-    keypanel.add(InlineKeyboardButton("مدیریت کانال ها",callback_data="panel_manage"))
-    keypanel.add(InlineKeyboardButton("افزودن کانال",callback_data="panel_add"))
-    bot.edit_message_text(' لطفا انتخاب کنید',cid,mid,reply_markup=keypanel)
+#---------------------------------------------------callback------------------------------------------------------------
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith("sends"))
-def call_callback_panel_sends(call):
-    global userStep
-    cid = call.message.chat.id
-    mid = call.message.message_id
-    data = call.data.split("_")  
-    count=0  
-    count_black=0
-    if data[1] =="brodcast":
-        list_user=databases.use_users()
-        for i in list_user:
-            try:
-                bot.copy_message(i[0],cid,int(data[-1]))
-                count+=1
-            except:
-                databases.delete_users(i)
-                count_black+=1
-                # print("eror")
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        text=f"به {count} نفر ارسال شد"
-        if count_black!=0:
-            text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
-        bot.edit_message_text(text,cid,mid,reply_markup=markup)
-    if data[1] =="forall":
-        list_user=databases.use_users()
-        for i in list_user:
-            try:
-                bot.forward_message(i[0],cid,int(data[-1]))
-                count+=1
-            except:
-                databases.delete_users(i)
-                count_black+=1
-                # print("eror")
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        text=f"به {count} نفر ارسال شد"
-        if count_black!=0:
-            text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
-        bot.edit_message_text(text,cid,mid,reply_markup=markup)
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith("panel"))
 def call_callback_panel_amar(call):
-    global userStep
     cid = call.message.chat.id
     mid = call.message.message_id
     data = call.data.split("_")[-1]
-    if data=="amar":
-        countOfUsers=len(databases.use_users())
-        txt = f'آمار کاربران: {countOfUsers}'
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.edit_message_text(txt,cid,mid,reply_markup=markup)
-    elif data=="info":
-        list_users=databases.use_users()
-        if len(list_users)>0:
-            text=""
-            number=1
-            for i in list_users:
-                text+=f"{number}.{i[1]} | موجودی:{dict_user_budget[i[0]]}"
-                number+=1
-        else:
-            text="کاربری وجود ندارد"
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,text,reply_markup=markup)
-    elif data=="brodcast":
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.edit_message_text("برای ارسال همگانی پیام لطفا پیام خود را ارسال کنید و در غیر این صورت برای بازگشت به پنل از دکمه زیر استفاده کنید",cid,mid,reply_markup=markup)
-        userStep[cid]=1
-    elif data=="forall":
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.edit_message_text("برای فوروارد همگانی پیام لطفا پیام خود را ارسال کنید و در غیر این صورت برای بازگشت به پنل از دکمه زیر استفاده کنید",cid,mid,reply_markup=markup)
-        userStep[cid]=2
-    elif data=="manage":
-        if len(chanal_target)==0:
-            bot.answer_callback_query(call.id,"هنوز کانالی انتخاب نشده است")
-        else:
-            for i in chanal_target:
-                markup=InlineKeyboardMarkup()
-                markup.add(InlineKeyboardButton("حذف کانال",callback_data=f"delete_{i}"))
-                bot.send_message(cid,f"اسم کانال: {chanal_target[i][0]}",reply_markup=markup)
-                
-    elif data=="add":
-        markup=InlineKeyboardMarkup()
-        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-        bot.send_message(cid,f"""
-برای افزودن کانال به ربات مراحل زیر را به ترتیب انجام دهید:
-1.ربات را در مانال مورد نظر اد کنید
-2.ربات را در کانال ادمین کنید
-3.یک پیام از کانال را برای ربات فوروارد کنید
-""",reply_markup=markup)
-        userStep[cid]=10
-
-
-@bot.message_handler(commands=['start'])
-def command_start(m):
-    global admins
-    cid = m.chat.id
-    if admins==0:
-        admins=cid
-    if cid!=admins:
-        databases.insert_users(cid,m.chat.first_name)
-    dict_user_budget.setdefault(cid,0)
-    if cid == admins:
-        keypanel = InlineKeyboardMarkup()
-        keypanel.add(InlineKeyboardButton('آمار کلی',callback_data='panel_amar'),InlineKeyboardButton("آمار جزئی",callback_data='panel_info'))
-        keypanel.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-        keypanel.add(InlineKeyboardButton("مدیریت کانال ها",callback_data="panel_manage"))
-        keypanel.add(InlineKeyboardButton("افزودن کانال",callback_data="panel_add"))
-        bot.send_message(cid,'سلام ادمین گرامی خوش امدید لطفا انتخاب کنید',reply_markup=keypanel)
+    countOfUsers=len(databases.use_users())
+    if countOfUsers>0:
+        if data=="amar":
+            countOfUsers=len(databases.use_users())
+            txt = f'آمار کاربران: {countOfUsers} نفر '
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.edit_message_text(txt,cid,mid,reply_markup=markup)
+        elif data=="brodcast":
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.edit_message_text("برای ارسال همگانی پیام لطفا پیام خود را ارسال کنید و در غیر این صورت برای بازگشت به پنل از دکمه زیر استفاده کنید",cid,mid,reply_markup=markup)
+            userStep[cid]=11
+        elif data=="forall":
+            markup=InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+            bot.edit_message_text("برای فوروارد همگانی پیام لطفا پیام خود را ارسال کنید و در غیر این صورت برای بازگشت به پنل از دکمه زیر استفاده کنید",cid,mid,reply_markup=markup)
+            userStep[cid]=12
     else:
-        markup=InlineKeyboardMarkup()
-        num=1
-        for i in chanal_target:
-            markup.add(InlineKeyboardButton(f"کانال {num}",url=f"{chanal_target[i][1]}"))
-            num+=1
-        markup.add(InlineKeyboardButton("نمایش موجودی",callback_data="show"))
-        markup.add(InlineKeyboardButton("ارسال شماره کارت برای ادمین",callback_data="senumcart"))
-        bot.send_message(cid,f"""
-سلام {m.chat.first_name} خوش آمدی 
-برای استفاده از ربات و کسب درآمد فقط کافیه داخل کانال های زیر عضو بشی و به ازای هر روز عضویت در کانال ها 5 هزار تومن پول دریافت کنی
-""",reply_markup=markup)
+        bot.answer_callback_query(call.id,"هنوز کاربری وجود ندارد")
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("synonym"))
+def languages_def(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    language=call.data.split("_")[1]
+    dict_synonym.setdefault(cid,"")
+    dict_synonym[cid]=language
+    bot.edit_message_text("لطفا کلمه خود را ارسال کنید:",cid,mid)
+    userStep[cid]=2
+@bot.callback_query_handler(func=lambda call: call.data.startswith("opposite"))
+def languages_def(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    language=call.data.split("_")[1]
+    dict_opposite.setdefault(cid,"")
+    dict_opposite[cid]=language
+    bot.edit_message_text("لطفا کلمه خود را ارسال کنید:",cid,mid)
+    userStep[cid]=3
+@bot.callback_query_handler(func=lambda call: call.data.startswith("language"))
+def languages_def(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    language=call.data.split("_")[1]
+    bot.delete_message(cid,mid)
+    word_translate=test.translate_word(text_fot_trean[cid],language)
+    try:
+        print(word_translate)
+        if len(word_translate.split(" "))==1:
+            path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+            if language=="en":
+                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+فونتیک:
+{fontic.get_ipa(word_translate)}
+➖➖➖➖➖➖➖➖➖
+ترجمه:
+{word_translate}
+➖➖➖➖➖➖➖➖➖
+""")
+            else:
+                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+ترجمه:
+{word_translate}
+➖➖➖➖➖➖➖➖➖
+""")         
+
+        else:
+            path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+            example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
+            if example!=None:
+                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+ترجمه:
+{word_translate}
+➖➖➖➖➖➖➖➖➖
+مثال:
+{example}
+""")
+            else:
+                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+ترجمه:
+{word_translate}
+""")
+        os.remove(path_vois)
+    except:
+        example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
+        if example!=None:
+            bot.send_message(cid,f"""
+ترجمه:
+{word_translate}
+➖➖➖➖➖➖➖➖➖
+مثال:
+{example}
+""")
+        else:
+            bot.send_message(cid,f"""
+ترجمه:
+{word_translate}
+""")
+        
+    
 
 
 
-@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==10)
-def add_new_chanel(m):
-    cid = m.chat.id
-    print(m)
-    if m.forward_from_chat.id not in chanal_target:
-        # bot.send_message(int(m.forward_from_chat.id), 'hi')
-        link=bot.export_chat_invite_link(chat_id=int(m.forward_from_chat.id))
-        chanal_target.setdefault(int(m.forward_from_chat.id),[m.forward_from_chat.title,link])
-        print("link",link)
-        bot.send_message(cid,"کانال اضافه شد")
-    else:
-        bot.send_message(cid,"این کانال قبلا اضافه شده است")
 
-@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==100)
-def get_mony(m):
-    cid = m.chat.id
+
+
+
+
+
+#----------------------------------------------------------m.text------------------------------------------------
+@bot.message_handler(func=lambda m: m.text=="ترجمه" or m.text=="✅ترجمه✅")
+def handel_text(m):
+    cid=m.chat.id
     text=m.text
-    markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("پرداخت و ارسال رسید",callback_data="payment"))
-    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-    bot.send_message(admins,f"""
-{cid}
-نام کاربر:{m.chat.first_name}
-موجودی : {dict_user_budget[cid]} تومن
-شماره کارت : {text}
-""",reply_markup=markup)
-    bot.send_message(cid,"شماره کارت شما برای ادمین ارسال شد")
+    mid=m.message_id
+    userStep[cid]=0
+    markup=ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add("✅ترجمه✅")
+    markup.add("مترادف","متضاد")
+    bot.send_message(cid,"برای دریافت ترجمه کلمه یا جمله مورد نظر خود را ارسال کنید",reply_markup=markup)
+    userStep[cid]=1
 
+@bot.message_handler(func=lambda m: m.text=="مترادف" or m.text=="✅مترادف✅")
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    userStep[cid]=0
+    markup=ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add("ترجمه")
+    markup.add("✅مترادف✅","متضاد")
+    bot.send_message(cid,"لطفا کلمه خود را ارسال کنید:",reply_markup=markup)
+    userStep[cid]=2
+    # markup=InlineKeyboardMarkup(row_width=4)
+    # list_murkup=[]
+    # for i in languages[:9]:
+    #     list_murkup.append(InlineKeyboardButton(i, callback_data=f"synonym_{languages[i]}"))
+    # markup.add(*list_murkup)
+    # bot.send_message(cid,"برای دریافت مترادف کلمات لطفا ابتدا زبان مد نظر را انتخاب کنید",reply_markup=markup)
+@bot.message_handler(func=lambda m: m.text=="متضاد" or m.text=="✅متضاد✅")
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    userStep[cid]=0
+    markup=ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add("ترجمه")
+    markup.add("مترادف","✅متضاد✅")
+    bot.send_message(cid,"لطفا کلمه خود را ارسال کنید:",reply_markup=markup)
+    userStep[cid]=3
+    # markup=InlineKeyboardMarkup(row_width=4)
+    # list_murkup=[]
+    # for i in languages[:9]:
+    #     list_murkup.append(InlineKeyboardButton(i, callback_data=f"opposite_{languages[i]}"))
+    # markup.add(*list_murkup)
+    # bot.send_message(cid,"برای دریافت متضاد کلمات لطفا ابتدا زبان مد نظر را انتخاب کنید",reply_markup=markup)
 
-@bot.message_handler(content_types=['photo','video',"video_note","audio","voice","document","sticker","location","contact","text"])
-def panel_set_photo(m):
-    global userStep
-    cid = m.chat.id
-    mid = m.message_id
-    if m.chat.type=="private":
-        text=m.text
-        if userStep[cid]==1:
-            markup=InlineKeyboardMarkup()
-            markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_brodcast_{mid}"))
-            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-            bot.send_message(cid,"پیام شما دریافت شد برای ارسال همگانی تایید را بزنید",reply_markup=markup)
-            userStep[cid]=0
-        elif userStep[cid]==2:
-            markup=InlineKeyboardMarkup()
-            markup.add(InlineKeyboardButton("تایید",callback_data=f"sends_forall_{mid}"))
-            markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
-            bot.send_message(cid,"پیام شما دریافت شد برای فوروارد همگانی تایید را بزنید",reply_markup=markup)
-            userStep[cid]=0
-        elif userStep[cid]==200:
-            bot.copy_message(user_id_payment,cid,mid)
-            dict_user_budget[user_id_payment]=0
-            bot.send_message(cid,"پرداخت انجام شد و رسید برای کاربر ارسال شد")
-            userStep[cid]=0
-        else:
-            bot.send_message(cid,"مقدار وارد شده نامعتبر است لطفا طبق دستور /start مجددا امتحان کنید")   
-            userStep[cid]=0
-def check_and_notify_thread():
-    global block_list
-    while True:
-        current_utc_time = datetime.datetime.now(pytz.utc)
-        tehran_timezone = pytz.timezone('Asia/Tehran')
-        current_time = current_utc_time.astimezone(tehran_timezone).strftime("%H:%M")
-        if current_time=="00:01":
-            list_user=databases.use_users()
-            for user in list_user:
-                if user[0] not in block_list:
-                    for chanel in chanal_target:
-                        if is_user_member(user[0],chanel):
-                            dict_user_budget[int(user[0])]+=5
-                    bot.send_message(int(user[0]),f"موجودی شما : {dict_user_budget[int(user[0])]} تومان")
-                    block_list.append(user)
-                    if dict_user_budget[int(user[0])]==100:
-                        markup=InlineKeyboardMarkup()
-                        markup.add(InlineKeyboardButton("بازگشت به منو",callback_data="menu"))
-                        bot.send_message(int(user[0]),"لطفا شماره کارت خود را برای دریافت پول ارسال کنید:",reply_markup=markup)
-                        userStep[int(user)]=100
+#---------------------------------------------------------userstep---------------------------------------------------
+    
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==1)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    text_fot_trean[cid]=text
+    markup=InlineKeyboardMarkup(row_width=4)
+    list_murkup=[]
+    for i in languages:
+        list_murkup.append(InlineKeyboardButton(i, callback_data=f"language_{languages[i]}"))
+    markup.add(*list_murkup)
+    bot.send_message(cid,"به چه زبانی ترجمه شود؟",reply_markup=markup)
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==2)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    try:
+        bot.send_message(cid,nltk_def.get_synonyms(text))
+    except:
+        bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
 
-        if current_time=="00:05":
-            block_list=[]
-        threading.Event().wait(56)
-
-
-check_thread = threading.Thread(target=check_and_notify_thread)
-check_thread.start()
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    try:
+        bot.send_message(cid,nltk_def.get_antonyms(text))
+    except:
+        bot.send_message(cid,"برای کلمه ای که ارسال کردید متضادی پیدا نشد")
 bot.infinity_polling()
-
