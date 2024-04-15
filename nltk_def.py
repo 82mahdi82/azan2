@@ -1,14 +1,16 @@
 from nltk.corpus import wordnet
 import nltk
-# nltk.download('wordnet')
+nltk.download('wordnet')
 def get_synonyms(word):
     synonyms = []
     for syn in wordnet.synsets(word):
         for lemma in syn.lemmas():
             synonyms.append(lemma.name())
-    text=""
+
     list_=list(set(synonyms))[:10] 
-    return "\n".join(list_)
+    text="<pre>" + "<b>مترادف</b>\n"+"\n".join(list_) + "</pre>"
+    return text
+
 
 from nltk.corpus import wordnet
 

@@ -8,6 +8,7 @@ import os
 import fontic
 import databases
 import sait
+import sitetarif
 
 TOKEN ='7018847010:AAEMTrqs7mZRwxyaXE_XUgbyYPYzl_Twt3M'
 
@@ -178,7 +179,9 @@ def command_start(m):
     if cid != admin:
         markup=ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("ترجمه")
-        markup.add("مترادف","متضاد")
+        markup.add("مترادف و تعریف لغت")
+        markup.add("ارتقا حساب ⬆️")
+        markup.add("لینک به سایت 🔗")
         bot.send_message(cid,f"""
 سلام {m.chat.first_name} عزیز 
 به ربات مترجم خوش آمدید
@@ -255,21 +258,20 @@ def languages_def(call):
                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
-فونتیک:
-{fontic.get_ipa(word_translate)}
+<pre>فونتیک:
+{fontic.get_ipa(word_translate)[0]}</pre>
 ➖➖➖➖➖➖➖➖➖
-ترجمه:
-{word_translate}
-➖➖➖➖➖➖➖➖➖
-""")
+<pre>ترجمه:
+{word_translate}</pre>
+""", parse_mode='HTML')
             else:
                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
-ترجمه:
-{word_translate}
-➖➖➖➖➖➖➖➖➖
-""")         
+<pre>ترجمه:
+{word_translate}</pre>
+
+""", parse_mode='HTML')         
 
         else:
             path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
@@ -278,35 +280,35 @@ def languages_def(call):
                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
-ترجمه:
-{word_translate}
+<pre>ترجمه:
+{word_translate}</pre>
 ➖➖➖➖➖➖➖➖➖
 مثال:
 {example}
-""")
+""", parse_mode='HTML')
             else:
                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
-ترجمه:
-{word_translate}
-""")
+<pre>ترجمه:
+{word_translate}</pre>
+""", parse_mode='HTML')
         os.remove(path_vois)
     except:
         example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
         if example!=None:
             bot.send_message(cid,f"""
-ترجمه:
-{word_translate}
+<pre>ترجمه:
+{word_translate}</pre>
 ➖➖➖➖➖➖➖➖➖
 مثال:
 {example}
-""")
+""", parse_mode='HTML')
         else:
             bot.send_message(cid,f"""
 ترجمه:
 {word_translate}
-""")
+""", parse_mode='HTML')
         
     
 
@@ -327,11 +329,13 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("✅ترجمه✅")
-    markup.add("مترادف","متضاد")
+    markup.add("مترادف و تعریف لغت")
+    markup.add("ارتقا حساب ⬆️")
+    markup.add("لینک به سایت 🔗")
     bot.send_message(cid,"برای دریافت ترجمه کلمه یا جمله مورد نظر خود را ارسال کنید",reply_markup=markup)
     userStep[cid]=1
 
-@bot.message_handler(func=lambda m: m.text=="مترادف" or m.text=="✅مترادف✅")
+@bot.message_handler(func=lambda m: m.text=="مترادف و تعریف لغت" or m.text=="✅مترادف و تعریف لغت✅")
 def handel_text(m):
     cid=m.chat.id
     text=m.text
@@ -339,16 +343,26 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
-    markup.add("✅مترادف✅","متضاد")
-    bot.send_message(cid,"لطفا کلمه خود را ارسال کنید:",reply_markup=markup)
+    markup.add("✅مترادف و تعریف لغت✅")
+    markup.add("ارتقا حساب ⬆️")
+    markup.add("لینک به سایت 🔗")
+    bot.send_message(cid,"لطفا برای دریافت تعریف لغت کلمه خود را ارسال کنید:",reply_markup=markup)
     userStep[cid]=2
-    # markup=InlineKeyboardMarkup(row_width=4)
-    # list_murkup=[]
-    # for i in languages[:9]:
-    #     list_murkup.append(InlineKeyboardButton(i, callback_data=f"synonym_{languages[i]}"))
-    # markup.add(*list_murkup)
-    # bot.send_message(cid,"برای دریافت مترادف کلمات لطفا ابتدا زبان مد نظر را انتخاب کنید",reply_markup=markup)
-@bot.message_handler(func=lambda m: m.text=="متضاد" or m.text=="✅متضاد✅")
+@bot.message_handler(func=lambda m: m.text=="ارتقا حساب ⬆️")
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    userStep[cid]=0
+    markup=ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add("یک ماهه : قیمت 00000 تومان")
+    markup.add("سه ماهه : قیمت 00000 تومان")
+    markup.add("سالیانه : قیمت 00000 تومان")
+    markup.add("منو اصلی 📜")
+    bot.send_message(cid,"برای ارتقا حساب خود یکی از پلن های زیر را انتخاب کنید: ",reply_markup=markup)
+
+
+@bot.message_handler(func=lambda m: m.text=="منو اصلی 📜")
 def handel_text(m):
     cid=m.chat.id
     text=m.text
@@ -356,15 +370,20 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
-    markup.add("مترادف","✅متضاد✅")
-    bot.send_message(cid,"لطفا کلمه خود را ارسال کنید:",reply_markup=markup)
-    userStep[cid]=3
-    # markup=InlineKeyboardMarkup(row_width=4)
-    # list_murkup=[]
-    # for i in languages[:9]:
-    #     list_murkup.append(InlineKeyboardButton(i, callback_data=f"opposite_{languages[i]}"))
-    # markup.add(*list_murkup)
-    # bot.send_message(cid,"برای دریافت متضاد کلمات لطفا ابتدا زبان مد نظر را انتخاب کنید",reply_markup=markup)
+    markup.add("مترادف و تعریف لغت")
+    markup.add("ارتقا حساب ⬆️")
+    markup.add("لینک به سایت 🔗")
+    bot.send_message(cid,"منو اصلی",reply_markup=markup)
+@bot.message_handler(func=lambda m: m.text=="لینک به سایت 🔗")
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    userStep[cid]=0
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("مشاهده سایت",url=""))
+    bot.send_message(cid,'برای مشاهده سایت از دکمه زیر استفاده کنید:',reply_markup=markup)
+
 
 #---------------------------------------------------------userstep---------------------------------------------------
     
@@ -384,16 +403,21 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     try:
-        bot.send_message(cid,nltk_def.get_synonyms(text))
+        motraadef=nltk_def.get_synonyms(text)
+        # motraadef="hi\n"
+        print(motraadef)
+        bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text), parse_mode='HTML')
+   
+
     except:
         bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
 
-@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
-def send_music(m):
-    cid=m.chat.id
-    text=m.text
-    try:
-        bot.send_message(cid,nltk_def.get_antonyms(text))
-    except:
-        bot.send_message(cid,"برای کلمه ای که ارسال کردید متضادی پیدا نشد")
+# @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
+# def send_music(m):
+#     cid=m.chat.id
+#     text=m.text
+#     try:
+#         bot.send_message(cid,nltk_def.get_antonyms(text))
+#     except:
+#         bot.send_message(cid,"برای کلمه ای که ارسال کردید متضادی پیدا نشد")
 bot.infinity_polling()

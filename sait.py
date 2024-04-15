@@ -35,12 +35,13 @@ def example(origin,teget,text):
                     break
                 if b !="" :
                     if not b.startswith("OpenSub"):
-                        num+=1
-                        if num==1:
-                            text+=b+"\n\n"
-                        else:text+=b+"\n"
+                        if not b.startswith("opensu"):
+                            num+=1
+                            if num==1:
+                                text+= "<pre>"+ b+"\n\n" +"</pre>"
+                            else:text+="<pre>"+b+"\n" +"</pre>"
                         
-            text+="➖➖➖➖➖➖➖➖➖"+"\n"
+            text+="〰〰〰〰〰〰〰〰〰"+"\n"
         return text
 
     else:

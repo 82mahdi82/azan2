@@ -1,5 +1,5 @@
 import pronouncing
-#'AH': "əˈ",#'ʌ',uuu
+#'AH': "əˈ",#'ʌ',
 def phonet_def(word):
 # word = "translation"
     phonetic_transcriptions = pronouncing.phones_for_word(word)
