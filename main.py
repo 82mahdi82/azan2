@@ -5,7 +5,7 @@ from googletrans import Translator
 import test
 import nltk_def
 import os
-import fontic
+# import fontic
 import databases
 import sait
 import sitetarif
@@ -258,12 +258,20 @@ def languages_def(call):
                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
-<pre>فونتیک:
-{fontic.get_ipa(word_translate)[0]}</pre>
-➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
 {word_translate}</pre>
 """, parse_mode='HTML')
+
+
+#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+# تلفظ 👆   
+# ➖➖➖➖➖➖➖➖➖
+# <pre>فونتیک:
+# {fontic.get_ipa(word_translate)[0]}</pre>
+# ➖➖➖➖➖➖➖➖➖
+# <pre>ترجمه:
+# {word_translate}</pre>
+# """, parse_mode='HTML')
             else:
                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
