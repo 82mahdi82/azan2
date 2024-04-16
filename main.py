@@ -15,8 +15,7 @@ databases.creat_database_tables()
 
 from nltk.corpus import wordnet
 import nltk
-# nltk.download('wordnet')
-
+nltk.download('wordnet')
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
@@ -745,15 +744,15 @@ def send_music(m):
 def send_music(m):
     cid=m.chat.id
     text=m.text
-    # try:
-    motraadef=nltk_def.get_synonyms(text)
-    # motraadef="hi\n"
-    print(motraadef)
-    bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text), parse_mode='HTML')
+    try:
+        motraadef=nltk_def.get_synonyms(text)
+        # motraadef="hi\n"
+        print(motraadef)
+        bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text), parse_mode='HTML')
    
 
-    # except:
-    #     bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
+    except:
+        bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
 
 # @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
 # def send_music(m):
