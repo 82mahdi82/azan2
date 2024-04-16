@@ -15,7 +15,7 @@ databases.creat_database_tables()
 
 from nltk.corpus import wordnet
 import nltk
-# nltk.download('wordnet')
+nltk.download('wordnet')
 
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
