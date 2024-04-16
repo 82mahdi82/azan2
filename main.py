@@ -17,13 +17,15 @@ from nltk.corpus import wordnet
 import nltk
 nltk.download('wordnet')
 
+
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
-admin=0#748626808
+admin=748626808
 channel_id= -1001898964360
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
 chanal_base=-1002029203141
+name_saite=""
 userStep={}
 dict_channel={} #{"name":"utl"}
 text_fot_trean={}#cid:text
@@ -31,6 +33,7 @@ dict_synonym={}
 dict_opposite={}
 dict_cid_language_dest={}
 dict_cid_language_source={}
+button_site={}
 languages_aks = {
     'fa': 'فارسی',
     'en': 'انگلیسی',
@@ -321,14 +324,73 @@ def command_start(m):
 لطفا برای استفاده از ربات یکی از گزینه های زیر را انتخاب کنید
 """,reply_markup=markup)
     else:
+        markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
         markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
+        markup.add(InlineKeyboardButton("تنظیم دکمه",callback_data="seting"))
         bot.send_message(cid,"""
 سلام ادمین گرامی 
 برای مدیریت بازی از دکمه های زیر استفاده کنید
 """,reply_markup=markup)
 
 #---------------------------------------------------callback------------------------------------------------------------
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("back"))
+def call_callback_panel_amar(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    userStep[cid]=0
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
+    markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
+    markup.add(InlineKeyboardButton("تنظیم دکمه",callback_data="seting"))
+    bot.edit_message_text("""
+سلام ادمین گرامی 
+برای مدیریت بازی از دکمه های زیر استفاده کنید
+""",cid,mid,reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data.startswith("check"))
+def call_callback_panel_amar(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    button_name = call.data.split("_")[-1]
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بله",callback_data=f"delete_{button_name}"),InlineKeyboardButton("خیر",callback_data="seting"))
+    bot.edit_message_text("آیا از حذف دکمه مطمئن هستید؟",cid,mid,reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("delete"))
+def call_callback_panel_amar(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    button_name = call.data.split("_")[-1]
+    button_site.pop(button_name)
+    def_button_site(call)
+    bot.answer_callback_query(call.id,"دکمه مورد نظر حذف شد")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("creat"))
+def call_callback_panel_amar(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_text("برای ساخت دکمه لینک لطفا ابتدا اسم دکمه را ارسال کنید:",cid,mid,reply_markup=markup)
+    userStep[cid]=10
+@bot.callback_query_handler(func=lambda call: call.data.startswith("seting"))
+def def_button_site(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    if len(button_site)==0:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.edit_message_text("برای ساخت دکمه لینک لطفا ابتدا اسم دکمه را ارسال کنید:",cid,mid,reply_markup=markup)
+        userStep[cid]=10
+    else:
+        markup=InlineKeyboardMarkup()
+        for i in button_site:
+            markup.add(InlineKeyboardButton(i,callback_data=f"check_{i}"))
+        markup.add(InlineKeyboardButton("ساخت دکمه جدید",callback_data="creat_button"))
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.edit_message_text("برای حذف هر دکمه روی آن کلیک کنید و برای ساخت دکمه جدید بر روی دکمه 'ساخت دکمه جدید' کلیک کنید",cid,mid,reply_markup=markup)
+
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("sushow"))
 def call_callback_panel_amar(call):
@@ -619,7 +681,8 @@ def handel_text(m):
     mid=m.message_id
     userStep[cid]=0
     markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("مشاهده سایت",url=""))
+    for i in button_site:
+        markup.add(InlineKeyboardButton(i,url=button_site[i]))
     bot.send_message(cid,'برای مشاهده سایت از دکمه زیر استفاده کنید:',reply_markup=markup)
 
 
@@ -753,6 +816,43 @@ def send_music(m):
 
     except:
         bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
+
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==10)
+def send_music(m):
+    global name_saite
+    cid=m.chat.id
+    text=m.text
+    if text in button_site:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"این اسم قبلا برای دکه دیگری انتخاب شده لطفا اسم دیگری ارسال کنید:",reply_markup=markup)
+    else:
+        name_saite=text
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"لطفا لینک سایت را ارسال کنید:",reply_markup=markup)
+        userStep[cid]=20
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==20)
+def send_music(m):
+    global name_saite
+    cid=m.chat.id
+    text=m.text
+    button_site.setdefault(name_saite,text)
+    bot.send_message(cid,"دکمه اضافه شد.")
+
+    markup=InlineKeyboardMarkup()
+    for i in button_site:
+        markup.add(InlineKeyboardButton(i,callback_data=f"check_{i}"))
+    markup.add(InlineKeyboardButton("ساخت دکمه جدید",callback_data="creat_button"))
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.send_message(cid,"برای حذف هر دکمه روی آن کلیک کنید و برای ساخت دکمه جدید بر روی دکمه 'ساخت دکمه جدید' کلیک کنید",reply_markup=markup)
+
+        
+
+
+
 
 # @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
 # def send_music(m):
