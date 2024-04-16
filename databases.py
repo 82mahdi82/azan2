@@ -3,7 +3,7 @@ def creat_database_tables():
     connect = sqlite3.connect("data.db")
     cur = connect.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS users(cid int(25))")
-    cur.execute("CREATE TABLE IF NOT EXISTS translations(text TEXT, language VARCHAR(50), mid int(100));")
+    cur.execute("CREATE TABLE IF NOT EXISTS translations(text TEXT, language VARCHAR(50), language_target VARCHAR(50), mid int(100));")
     connect.commit()
     connect.close()
 
@@ -36,17 +36,17 @@ def use_users():
     return f
 
 
-def insert_translations(text,language,mid):
+def insert_translations(text,language,language_target,mid):
     connect = sqlite3.connect("data.db")
     cur = connect.cursor()
-    cur.execute(f"insert into translations (text,language,mid) values ('{text}','{language}',{mid})")
+    cur.execute(f"insert into translations (text,language,language_target,mid) values ('{text}','{language}','{language_target}',{mid})")
     connect.commit()
     connect.close()
 
-def use_translations(text,language):
+def use_translations(text,language,language_target):
     connect = sqlite3.connect("data.db")
     cur = connect.cursor()
-    cur.execute(f"select * from translations where text='{text}' AND language='{language}'")   
+    cur.execute(f"select * from translations where text='{text}' AND language='{language}' AND language_target='{language_target}'")   
     f = cur.fetchall()
     connect.commit()
     connect.close()
