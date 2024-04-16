@@ -5,10 +5,17 @@ from googletrans import Translator
 import test
 import nltk_def
 import os
-# import fontic
+import fontic
 import databases
 import sait
 import sitetarif
+import test4
+
+
+from nltk.corpus import wordnet
+import nltk
+nltk.download('wordnet')
+
 
 TOKEN ='7018847010:AAEMTrqs7mZRwxyaXE_XUgbyYPYzl_Twt3M'
 
@@ -21,15 +28,138 @@ dict_channel={} #{"name":"utl"}
 text_fot_trean={}#cid:text
 dict_synonym={}
 dict_opposite={}
+dict_cid_language_dest={}
+dict_cid_language_source={}
+languages_aks = {
+    'fa': 'فارسی',
+    'en': 'انگلیسی',
+    'de': 'آلمانی',
+    'it': 'ایتالیایی',
+    'es': 'اسپانیایی',
+    'ko': 'کره‌ای',
+    'ja': 'ژاپنی',
+    'zh-cn': 'چینی (ساده شده)',
+    'zh-tw': 'چینی (سنتی)',
+    'pt': 'پرتغالی',
+    'ar': 'عربی',
+    'tr': 'ترکی',
+    'ru': 'روسی',
+    'af': 'افریکانس',
+    'sq': 'البانیایی',
+    'am': 'امهری',
+    'hy': 'ارمنی',
+    'az': 'آذربایجانی',
+    'eu': 'باسکی',
+    'be': 'بلاروسی',
+    'bn': 'بنگالی',
+    'bs': 'بوسنیایی',
+    'bg': 'بلغاری',
+    'ca': 'کاتالان',
+    'ceb': 'سبوآنو',
+    'ny': 'چیچوا',
+    'co': 'کرسی',
+    'hr': 'کرواتی',
+    'cs': 'چک',
+    'da': 'دانمارکی',
+    'nl': 'هلندی',
+    'eo': 'اسپرانتو',
+    'et': 'استونیایی',
+    'tl': 'فیلیپینی',
+    'fi': 'فنلاندی',
+    'fr': 'فرانسوی',
+    'fy': 'فریسی',
+    'gl': 'گالیسیایی',
+    'ka': 'گرجی',
+    'el': 'یونانی',
+    'gu': 'گجراتی',
+    'ht': 'کریول هائیتی',
+    'ha': 'هوسا',
+    'haw': 'هاوایی',
+    'iw': 'عبری',
+    'hi': 'هندی',
+    'hmn': 'همونگ',
+    'hu': 'مجاری',
+    'is': 'ایسلندی',
+    'ig': 'ایبو',
+    'id': 'اندونزیایی',
+    'ga': 'ایرلندی',
+    'jw': 'جاوه‌ای',
+    'kn': 'کانارا',
+    'kk': 'قزاقی',
+    'km': 'خمر',
+    'ku': 'کردی (کورمانجی)',
+    'ky': 'قرقیزی',
+    'lo': 'لائو',
+    'la': 'لاتین',
+    'lv': 'لتونیایی',
+    'lt': 'لیتوانیایی',
+    'lb': 'لوکزامبورگی',
+    'mk': 'مقدونی',
+    'mg': 'مالاگاسی',
+    'ms': 'مالایی',
+    'ml': 'مالایالام',
+    'mt': 'مالتی',
+    'mi': 'مائوری',
+    'mr': 'مراتی',
+    'mn': 'مغولی',
+    'my': 'میانمار (برمه‌ای)',
+    'ne': 'نپالی',
+    'no': 'نروژی',
+    'or': 'اودیا',
+    'ps': 'پشتو',
+    'pl': 'لهستانی',
+    'pa': 'پنجابی',
+    'ro': 'رومانیایی',
+    'sm': 'ساموآیی',
+    'gd': 'اسکاتلندی گیلیک',
+    'sr': 'صربی',
+    'st': 'سوتویی',
+    'sn': 'شونایی',
+    'sd': 'سندی',
+    'si': 'سینهالا',
+    'sk': 'اسلواکی',
+    'sl': 'اسلوونیایی',
+    'so': 'سومالیایی',
+    'su': 'سوندانی',
+    'sw': 'سواحلی',
+    'sv': 'سوئدی',
+    'tg': 'تاجیکی',
+    'ta': 'تامیلی',
+    'te': 'تلوگو',
+    'th': 'تایلندی',
+    'uk': 'اوکراینی',
+    'ur': 'اردو',
+    'ug': 'اویغوری',
+    'uz': 'ازبکی',
+    'vi': 'ویتنامی',
+    'cy': 'ولزی',
+    'xh': 'خوسایی',
+    'yi': 'یدیش',
+    'yo': 'یوروبا',
+    'zu': 'زولو',
+    "اوتوماتیک":'اوتوماتیک'
+}
+
 languages = {
     'فارسی': 'fa',
     'انگلیسی': 'en',
     'آلمانی': 'de',
+    'ایتالیایی': 'it',
+    'اسپانیایی': 'es',
+    'کره‌ای': 'ko',
+    'ژاپنی': 'ja',
+    'چینی (ساده شده)': 'zh-cn',
+    'چینی (سنتی)': 'zh-tw',
     'پرتغالی': 'pt',
+    'عربی': 'ar',
+    'ترکی': 'tr',
+    'روسی': 'ru',
+
+
     'افریکانس': 'af',
     'البانیایی': 'sq',
     'امهری': 'am',
-    'عربی': 'ar',
+    
     'ارمنی': 'hy',
     'آذربایجانی': 'az',
     'باسکی': 'eu',
@@ -40,8 +170,7 @@ languages = {
     'کاتالان': 'ca',
     'سبوآنو': 'ceb',
     'چیچوا': 'ny',
-    'چینی (ساده شده)': 'zh-cn',
-    'چینی (سنتی)': 'zh-tw',
+
     'کرسی': 'co',
     'کرواتی': 'hr',
     'چک': 'cs',
@@ -68,13 +197,13 @@ languages = {
     'ایبو': 'ig',
     'اندونزیایی': 'id',
     'ایرلندی': 'ga',
-    'ایتالیایی': 'it',
-    'ژاپنی': 'ja',
+    
+    
     'جاوه‌ای': 'jw',
     'کانارا': 'kn',
     'قزاقی': 'kk',
     'خمر': 'km',
-    'کره‌ای': 'ko',
+    
     'کردی (کورمانجی)': 'ku',
     'قرقیزی': 'ky',
     'لائو': 'lo',
@@ -98,7 +227,7 @@ languages = {
     'لهستانی': 'pl',
     'پنجابی': 'pa',
     'رومانیایی': 'ro',
-    'روسی': 'ru',
+    
     'ساموآیی': 'sm',
     'اسکاتلندی گیلیک': 'gd',
     'صربی': 'sr',
@@ -109,7 +238,7 @@ languages = {
     'اسلواکی': 'sk',
     'اسلوونیایی': 'sl',
     'سومالیایی': 'so',
-    'اسپانیایی': 'es',
+    
     'سوندانی': 'su',
     'سواحلی': 'sw',
     'سوئدی': 'sv',
@@ -117,7 +246,7 @@ languages = {
     'تامیلی': 'ta',
     'تلوگو': 'te',
     'تایلندی': 'th',
-    'ترکی': 'tr',
+    
     'اوکراینی': 'uk',
     'اردو': 'ur',
     'اویغوری': 'ug',
@@ -176,12 +305,15 @@ def is_user_member(user_id, channel_id):
 def command_start(m):
     cid = m.chat.id
     text_fot_trean.setdefault(cid,"")
+    dict_cid_language_source.setdefault(cid,"اوتوماتیک")
+
     if cid != admin:
         markup=ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("ترجمه")
+        # if cid in dict_cid_language_dest:
+        #     markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}")
         markup.add("مترادف و تعریف لغت")
-        markup.add("ارتقا حساب ⬆️")
-        markup.add("لینک به سایت 🔗")
+        markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
         bot.send_message(cid,f"""
 سلام {m.chat.first_name} عزیز 
 به ربات مترجم خوش آمدید
@@ -197,6 +329,29 @@ def command_start(m):
 
 #---------------------------------------------------callback------------------------------------------------------------
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith("sushow"))
+def call_callback_panel_amar(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    data = call.data.split("_")[-1]
+    markup=InlineKeyboardMarkup(row_width=4)
+    list_murkup=[]
+    for i in languages:
+        list_murkup.append(InlineKeyboardButton(i, callback_data=f"sulanguage_{languages[i]}"))
+    markup.add(*list_murkup)
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+@bot.callback_query_handler(func=lambda call: call.data.startswith("show"))
+def call_callback_panel_amar(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    data = call.data.split("_")[-1]
+    markup=InlineKeyboardMarkup(row_width=4)
+    list_murkup=[]
+    for i in languages:
+        list_murkup.append(InlineKeyboardButton(i, callback_data=f"language_{languages[i]}"))
+    markup.add(*list_murkup)
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+    
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("panel"))
 def call_callback_panel_amar(call):
@@ -243,80 +398,111 @@ def languages_def(call):
     dict_opposite[cid]=language
     bot.edit_message_text("لطفا کلمه خود را ارسال کنید:",cid,mid)
     userStep[cid]=3
+@bot.callback_query_handler(func=lambda call: call.data.startswith("sulanguage"))
+def languages_def(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    language=call.data.split("_")[1]
+    dict_cid_language_source.setdefault(cid,"")
+    dict_cid_language_source[cid]=language
+    bot.delete_message(cid,mid)
+    markup=ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add("✅ترجمه✅")
+    if cid in dict_cid_language_dest:
+        markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
+    markup.add("مترادف و تعریف لغت")
+    markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
+    bot.send_message(cid,"زبان شما انتخاب شد\nکلمه یا جمله خود را برای ترجمه ارسال کنید:",reply_markup=markup)
+
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith("language"))
 def languages_def(call):
     cid = call.message.chat.id
     mid = call.message.message_id
     language=call.data.split("_")[1]
+    dict_cid_language_dest.setdefault(cid,"")
+    dict_cid_language_dest[cid]=language
     bot.delete_message(cid,mid)
-    word_translate=test.translate_word(text_fot_trean[cid],language)
-    try:
-        print(word_translate)
-        if len(word_translate.split(" "))==1:
-            path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
-            if language=="en":
-                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-تلفظ 👆   
-➖➖➖➖➖➖➖➖➖
-<pre>ترجمه:
-{word_translate}</pre>
-""", parse_mode='HTML')
-
-
+    markup=ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add("✅ترجمه✅")
+    if cid in dict_cid_language_dest:
+        markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
+    markup.add("مترادف و تعریف لغت")
+    markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
+    bot.send_message(cid,"زبان شما انتخاب شد\nکلمه یا جمله خود را برای ترجمه ارسال کنید:",reply_markup=markup)
+    # word_translate=test.translate_word(text_fot_trean[cid],language)
+#     if len(text_fot_trean[cid])>499:
+#         word_translate=test.translate_word(text_fot_trean[cid],language)
+#     else:
+#         word_translate=test4.translate_text(text_fot_trean[cid],language,dict_cid_language_source[cid])
+#     try:
+#         print(word_translate)
+#         if len(word_translate.split(" "))==1:
+#             path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+#             if language=="en":
 #                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 # تلفظ 👆   
-# ➖➖➖➖➖➖➖➖➖
-# <pre>فونتیک:
-# {fontic.get_ipa(word_translate)[0]}</pre>
 # ➖➖➖➖➖➖➖➖➖
 # <pre>ترجمه:
 # {word_translate}</pre>
 # """, parse_mode='HTML')
-            else:
-                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-تلفظ 👆   
-➖➖➖➖➖➖➖➖➖
-<pre>ترجمه:
-{word_translate}</pre>
 
-""", parse_mode='HTML')         
 
-        else:
-            path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
-            example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
-            if example!=None:
-                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-تلفظ 👆   
-➖➖➖➖➖➖➖➖➖
-<pre>ترجمه:
-{word_translate}</pre>
-➖➖➖➖➖➖➖➖➖
-مثال:
-{example}
-""", parse_mode='HTML')
-            else:
-                bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-تلفظ 👆   
-➖➖➖➖➖➖➖➖➖
-<pre>ترجمه:
-{word_translate}</pre>
-""", parse_mode='HTML')
-        os.remove(path_vois)
-    except:
-        example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
-        if example!=None:
-            bot.send_message(cid,f"""
-<pre>ترجمه:
-{word_translate}</pre>
-➖➖➖➖➖➖➖➖➖
-مثال:
-{example}
-""", parse_mode='HTML')
-        else:
-            bot.send_message(cid,f"""
-ترجمه:
-{word_translate}
-""", parse_mode='HTML')
+# #                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+# # تلفظ 👆   
+# # ➖➖➖➖➖➖➖➖➖
+# # <pre>فونتیک:
+                
+# # {fontic.get_ipa(word_translate)[0]}</pre>
+# # ➖➖➖➖➖➖➖➖➖
+# # <pre>ترجمه:
+# # {word_translate}</pre>
+# # """, parse_mode='HTML')
+#             else:
+#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+# تلفظ 👆   
+# ➖➖➖➖➖➖➖➖➖
+# <pre>ترجمه:
+# {word_translate}</pre>
+
+# """, parse_mode='HTML')         
+
+#         else:
+#             path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+#             example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
+#             if example!=None:
+#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+# تلفظ 👆   
+# ➖➖➖➖➖➖➖➖➖
+# <pre>ترجمه:
+# {word_translate}</pre>
+# ➖➖➖➖➖➖➖➖➖
+# مثال:
+# {example}
+# """, parse_mode='HTML')
+#             else:
+#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+# تلفظ 👆   
+# ➖➖➖➖➖➖➖➖➖
+# <pre>ترجمه:
+# {word_translate}</pre>
+# """, parse_mode='HTML')
+#         os.remove(path_vois)
+#     except:
+#         example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
+#         if example!=None:
+#             bot.send_message(cid,f"""
+# <pre>ترجمه:
+# {word_translate}</pre>
+# ➖➖➖➖➖➖➖➖➖
+# مثال:
+# {example}
+# """, parse_mode='HTML')
+#         else:
+#             bot.send_message(cid,f"""
+# ترجمه:
+# {word_translate}
+# """, parse_mode='HTML')
         
     
 
@@ -329,6 +515,44 @@ def languages_def(call):
 
 
 #----------------------------------------------------------m.text------------------------------------------------
+
+
+@bot.message_handler(func=lambda m: m.text.startswith("ترجمه از:"))
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    markup=InlineKeyboardMarkup()
+    list_murkup=[]
+    num=1
+    markup.add(InlineKeyboardButton("اوتوماتیک",callback_data='sulanguage_اوتوماتیک'))
+    for i in languages:
+        if num==15:
+            break
+        list_murkup.append(InlineKeyboardButton(i, callback_data=f"sulanguage_{languages[i]}"))
+        num+=1
+    list_murkup.append(InlineKeyboardButton("سایر زبان ها",callback_data="sushow_other"))
+    markup.add(*list_murkup)
+    bot.send_message(cid,"زبان ورودی خود را انتخاب کنید",reply_markup=markup)
+
+@bot.message_handler(func=lambda m: m.text.startswith("ترجمه به:") )
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    markup=InlineKeyboardMarkup()
+    list_murkup=[]
+    num=1
+    for i in languages:
+        if num==15:
+            break
+        list_murkup.append(InlineKeyboardButton(i, callback_data=f"language_{languages[i]}"))
+        num+=1
+    list_murkup.append(InlineKeyboardButton("سایر زبان ها",callback_data="show_other"))
+    markup.add(*list_murkup)
+    bot.send_message(cid,"به چه زبانی ترجمه شود؟",reply_markup=markup)
+
+
 @bot.message_handler(func=lambda m: m.text=="ترجمه" or m.text=="✅ترجمه✅")
 def handel_text(m):
     cid=m.chat.id
@@ -337,9 +561,12 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("✅ترجمه✅")
+    dict_cid_language_source.setdefault(cid,"اوتوماتیک")
+    dict_cid_language_dest.setdefault(cid,"en")
+    if cid in dict_cid_language_dest:
+        markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
-    markup.add("ارتقا حساب ⬆️")
-    markup.add("لینک به سایت 🔗")
+    markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"برای دریافت ترجمه کلمه یا جمله مورد نظر خود را ارسال کنید",reply_markup=markup)
     userStep[cid]=1
 
@@ -351,9 +578,9 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
-    markup.add("✅مترادف و تعریف لغت✅")
-    markup.add("ارتقا حساب ⬆️")
-    markup.add("لینک به سایت 🔗")
+    markup.add('✅مترادف و تعریف لغت✅')
+    markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
+
     bot.send_message(cid,"لطفا برای دریافت تعریف لغت کلمه خود را ارسال کنید:",reply_markup=markup)
     userStep[cid]=2
 @bot.message_handler(func=lambda m: m.text=="ارتقا حساب ⬆️")
@@ -378,9 +605,10 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
+    if cid in dict_cid_language_dest:
+        markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
-    markup.add("ارتقا حساب ⬆️")
-    markup.add("لینک به سایت 🔗")
+    markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"منو اصلی",reply_markup=markup)
 @bot.message_handler(func=lambda m: m.text=="لینک به سایت 🔗")
 def handel_text(m):
@@ -401,9 +629,94 @@ def send_music(m):
     text=m.text
     text_fot_trean[cid]=text
     markup=InlineKeyboardMarkup(row_width=4)
+    if cid in dict_cid_language_dest:
+        language=dict_cid_language_dest[cid]
+        # word_translate=test.translate_word(text_fot_trean[cid],language)
+        if len(text)>499:
+            word_translate=test.translate_word(text_fot_trean[cid],language)
+        else:
+            word_translate=test4.translate_text(text_fot_trean[cid],language,dict_cid_language_source[cid])
+        try:
+            print(word_translate)
+            if len(word_translate.split(" "))==1:
+                path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+                if language=="en":
+#                   bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+# تلفظ 👆   
+# ➖➖➖➖➖➖➖➖➖
+# <pre>ترجمه:
+# {word_translate}</pre>
+# """, parse_mode='HTML')
+
+
+                    bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+<pre>فونتیک:
+                
+{fontic.get_ipa(word_translate)[0]}</pre>
+➖➖➖➖➖➖➖➖➖
+<pre>ترجمه:
+{word_translate}</pre>
+""", parse_mode='HTML')
+                else:
+                    bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+<pre>ترجمه:
+{word_translate}</pre>
+
+""", parse_mode='HTML')         
+
+            else:
+                path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+                example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
+                if example!=None:
+                    bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+<pre>ترجمه:
+{word_translate}</pre>
+➖➖➖➖➖➖➖➖➖
+مثال:
+{example}
+""", parse_mode='HTML')
+                else:
+                    bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+<pre>ترجمه:
+{word_translate}</pre>
+""", parse_mode='HTML')
+            os.remove(path_vois)
+        except:
+            example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
+            if example!=None:
+                bot.send_message(cid,f"""
+<pre>ترجمه:
+{word_translate}</pre>
+➖➖➖➖➖➖➖➖➖
+مثال:
+{example}
+""", parse_mode='HTML')
+            else:
+                bot.send_message(cid,f"""
+ترجمه:
+{word_translate}
+""", parse_mode='HTML')
+        return
+    
+
+
+
     list_murkup=[]
+    num=1
     for i in languages:
+        if num==15:
+            break
         list_murkup.append(InlineKeyboardButton(i, callback_data=f"language_{languages[i]}"))
+        num+=1
+    list_murkup.append(InlineKeyboardButton("سایر زبان ها",callback_data="show_other"))
     markup.add(*list_murkup)
     bot.send_message(cid,"به چه زبانی ترجمه شود؟",reply_markup=markup)
 @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==2)

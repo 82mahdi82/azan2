@@ -8,6 +8,7 @@ def example(origin,teget,text):
     # print(iner_str)
     # آدرس URL صفحه وب مورد نظر
     url = f"https://glosbe.com/{origin}/{teget}/{iner_str}"
+    print(url)
 
     # درخواست GET برای دریافت محتوای صفحه
     response = requests.get(url)

@@ -1,6 +1,6 @@
 from nltk.corpus import wordnet
 import nltk
-nltk.download('wordnet')
+# nltk.download('wordnet')
 def get_synonyms(word):
     synonyms = []
     for syn in wordnet.synsets(word):

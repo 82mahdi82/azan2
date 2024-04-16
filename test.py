@@ -12,11 +12,13 @@ def get_language_options():
     languages = {'1': 'fa', '2': 'fr', '3': 'es'}  # اینجا شما می‌توانید کدهای زبان‌ها را تغییر دهید
     return languages.get(choice, 'en')  # اگر گزینه‌ی انتخابی نامعتبر باشد، به زبان انگلیسی ترجمه خواهد شد
 
-def translate_word(word, dest_lang='en'):
+def translate_word(word, dest_lang='en', source_language='auto'):
     translator = Translator()
-    translation = translator.translate(word, dest=dest_lang)
+    translation = translator.translate(word, src=source_language, dest=dest_lang)
     return translation.text
 
+
+# print(translate_word("کی میری تهران؟","fa"))
 def play_audio(name,text, lang):
     tts = gTTS(text=text, lang=lang)
     tts.save(f"{name}.mp3")
