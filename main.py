@@ -17,7 +17,7 @@ import nltk
 nltk.download('wordnet')
 
 
-TOKEN ='7018847010:AAEMTrqs7mZRwxyaXE_XUgbyYPYzl_Twt3M'
+TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'#'7018847010:AAEMTrqs7mZRwxyaXE_XUgbyYPYzl_Twt3M'
 
 admin=0#748626808
 channel1_id = -1002016755212  # Replace with your channel1 ID
