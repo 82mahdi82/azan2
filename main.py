@@ -312,6 +312,7 @@ def command_start(m):
     dict_cid_language_source.setdefault(cid,"اوتوماتیک")
 
     if cid != admin:
+        databases.insert_users(cid)
         markup=ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("ترجمه")
         # if cid in dict_cid_language_dest:
@@ -324,6 +325,7 @@ def command_start(m):
 لطفا برای استفاده از ربات یکی از گزینه های زیر را انتخاب کنید
 """,reply_markup=markup)
     else:
+        
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
         markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
@@ -334,6 +336,48 @@ def command_start(m):
 """,reply_markup=markup)
 
 #---------------------------------------------------callback------------------------------------------------------------
+@bot.callback_query_handler(func=lambda call: call.data.startswith("sends"))
+def call_callback_panel_sends(call):
+    global userstep
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    data = call.data.split("_")  
+    count=0  
+    count_black=0
+    if data[1] =="brodcast":
+        list_user=databases.use_users()
+        for i in list_user:
+            try:
+                bot.copy_message(i,cid,int(data[-1]))
+                count+=1
+            except:
+                databases.delete_users(i)
+                count_black+=1
+                # print("eror")
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        text=f"به {count} نفر ارسال شد"
+        if count_black!=0:
+            text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
+        bot.edit_message_text(text,cid,mid,reply_markup=markup)
+    if data[1] =="forall":
+        list_user=databases.use_users()
+        for i in list_user:
+            try:
+                bot.forward_message(i,cid,int(data[-1]))
+                count+=1
+            except:
+                databases.delete_users(i)
+                count_black+=1
+                # print("eror")
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        text=f"به {count} نفر ارسال شد"
+        if count_black!=0:
+            text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
+        bot.edit_message_text(text,cid,mid,reply_markup=markup)
+
+
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("back"))
 def call_callback_panel_amar(call):
@@ -433,12 +477,12 @@ def call_callback_panel_amar(call):
             markup=InlineKeyboardMarkup()
             markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
             bot.edit_message_text("برای ارسال همگانی پیام لطفا پیام خود را ارسال کنید و در غیر این صورت برای بازگشت به پنل از دکمه زیر استفاده کنید",cid,mid,reply_markup=markup)
-            userStep[cid]=11
+            userStep[cid]=30
         elif data=="forall":
             markup=InlineKeyboardMarkup()
             markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
             bot.edit_message_text("برای فوروارد همگانی پیام لطفا پیام خود را ارسال کنید و در غیر این صورت برای بازگشت به پنل از دکمه زیر استفاده کنید",cid,mid,reply_markup=markup)
-            userStep[cid]=12
+            userStep[cid]=31
     else:
         bot.answer_callback_query(call.id,"هنوز کاربری وجود ندارد")
 
@@ -852,9 +896,53 @@ def send_music(m):
     markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
     bot.send_message(cid,"برای حذف هر دکمه روی آن کلیک کنید و برای ساخت دکمه جدید بر روی دکمه 'ساخت دکمه جدید' کلیک کنید",reply_markup=markup)
 
-        
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==30)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    list_user=databases.use_users()
+    count=0  
+    count_black=0
+    for i in list_user:
+        try:
+            bot.copy_message(i,cid,mid)
+            count+=1
+        except:
+            databases.delete_users(i)
+            count_black+=1
+            # print("eror")
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    text=f"به {count} نفر ارسال شد"
+    if count_black!=0:
+        text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
+    bot.send_message(cid,text,reply_markup=markup)
 
 
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==31)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    list_user=databases.use_users()
+    count=0  
+    count_black=0
+    for i in list_user:
+        try:
+            bot.copy_message(i,cid,mid)
+            count+=1
+        except:
+            databases.delete_users(i)
+            count_black+=1
+            # print("eror")
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    text=f"به {count} نفر ارسال شد"
+    if count_black!=0:
+        text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
+    bot.send_message(cid,text,reply_markup=markup)
 
 
 # @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
