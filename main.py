@@ -17,7 +17,7 @@ import nltk
 nltk.download('wordnet')
 
 
-TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'#'7018847010:AAEMTrqs7mZRwxyaXE_XUgbyYPYzl_Twt3M'
+TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
 admin=0#748626808
 channel1_id = -1002016755212  # Replace with your channel1 ID
@@ -658,6 +658,8 @@ def send_music(m):
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
 {word_translate}</pre>
+
+@novinzabanbot
 """, parse_mode='HTML')
                 else:
                     bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
@@ -666,6 +668,7 @@ def send_music(m):
 <pre>ترجمه:
 {word_translate}</pre>
 
+@novinzabanbot
 """, parse_mode='HTML')         
 
             else:
@@ -680,6 +683,8 @@ def send_music(m):
 ➖➖➖➖➖➖➖➖➖
 مثال:
 {example}
+
+@novinzabanbot
 """, parse_mode='HTML')
                 else:
                     bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
@@ -687,6 +692,8 @@ def send_music(m):
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
 {word_translate}</pre>
+
+@novinzabanbot
 """, parse_mode='HTML')
             os.remove(path_vois)
         except:
@@ -703,6 +710,8 @@ def send_music(m):
                 bot.send_message(cid,f"""
 ترجمه:
 {word_translate}
+
+@novinzabanbot
 """, parse_mode='HTML')
         return
     
