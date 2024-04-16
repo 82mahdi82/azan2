@@ -15,7 +15,7 @@ databases.creat_database_tables()
 
 from nltk.corpus import wordnet
 import nltk
-nltk.download('wordnet')
+# nltk.download('wordnet')
 
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
@@ -693,11 +693,16 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     text_fot_trean[cid]=text
+    if dict_cid_language_source[cid]=="اوتوماتیک":
+        check=text.split(" ")[0]
+        source_language=detect_language(check)
+    else:
+        source_language=dict_cid_language_source[cid]
     markup=InlineKeyboardMarkup(row_width=4)
-    list_info=databases.use_translations(text,dict_cid_language_source[cid],dict_cid_language_dest[cid])
+    list_info=databases.use_translations(text,source_language,dict_cid_language_dest[cid])
     if len(list_info)==1:
         dict_info=list_info[0]
-        bot.copy_message(cid,channel_id,int(dict_info[2]))
+        bot.copy_message(cid,channel_id,int(dict_info[3]))
         return
 
     if cid in dict_cid_language_dest:
@@ -706,14 +711,15 @@ def send_music(m):
         if len(text)>499:
             word_translate=test.translate_word(text_fot_trean[cid],language)
         else:
-            word_translate=test4.translate_text(text_fot_trean[cid],language,dict_cid_language_source[cid])
+            word_translate=test4.translate_text(text_fot_trean[cid],language,source_language)
         try:
             print(word_translate)
+            path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
             if len(word_translate.split(" "))==1:
                 # if language=="fa":
                 #     vois=test4.translate_text(text_fot_trean[cid],language,dict_cid_language_source[cid])
                 #     path_vois=test.play_audio(word_translate.split(" ")[0],vois,"en")
-                path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+                
                 if language=="en":
                     message=bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
 تلفظ 👆   
@@ -728,7 +734,7 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML')
                     chanel=bot.copy_message(channel_id,cid,message.message_id)
-                    databases.insert_translations(text,dict_cid_language_source[cid],language,chanel.message_id)
+                    databases.insert_translations(text,source_language,language,chanel.message_id)
                     return
                 else:
                     message=bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
@@ -740,7 +746,7 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML') 
                     chanel=bot.copy_message(channel_id,cid,message.message_id)   
-                    databases.insert_translations(text,dict_cid_language_source[cid],language,chanel.message_id)   
+                    databases.insert_translations(text,source_language,language,chanel.message_id)
                     return  
 
             else:
@@ -759,7 +765,7 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML')
                     chanel=bot.copy_message(channel_id,cid,message.message_id)
-                    databases.insert_translations(text,dict_cid_language_source[cid],language,chanel.message_id) 
+                    databases.insert_translations(text,source_language,language,chanel.message_id)
                     return
                 else:
                     message=bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
@@ -772,7 +778,7 @@ def send_music(m):
 """, parse_mode='HTML')
             os.remove(path_vois)
             chanel=bot.copy_message(channel_id,cid,message.message_id)
-            databases.insert_translations(text,dict_cid_language_source[cid],language,chanel.message_id) 
+            databases.insert_translations(text,source_language,language,chanel.message_id)
             return
         except:
             example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
@@ -787,7 +793,7 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML')
                 chanel=bot.copy_message(channel_id,cid,message.message_id)
-                databases.insert_translations(text,dict_cid_language_source[cid],language,chanel.message_id) 
+                databases.insert_translations(text,source_language,language,chanel.message_id)
                 return
             else:
                 message=bot.send_message(cid,f"""
@@ -797,7 +803,7 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML')
                 chanel=bot.copy_message(channel_id,cid,message.message_id)
-                databases.insert_translations(text,dict_cid_language_source[cid],language,chanel.message_id)
+                databases.insert_translations(text,source_language,language,chanel.message_id)
                 return 
     
 @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==2)
