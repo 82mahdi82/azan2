@@ -21,7 +21,7 @@ nltk.download('wordnet')
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
-admin=748626808 #120389165
+admin=120389165
 channel_id= -1001898964360
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
@@ -813,19 +813,25 @@ def send_music(m):
                 return  
         else:
             if len(word_translate)>100:
-                results = {}
-                thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
-                thread1.start()
-                thread1.join()
-                result2 = results["vois"]
-                message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
-تلفظ 👆   
-➖➖➖➖➖➖➖➖➖
+                # results = {}
+                # thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
+                # thread1.start()
+                # thread1.join()
+                # result2 = results["vois"]
+                message=bot.send_message(cid,f"""
 <pre>ترجمه:
 {word_translate}</pre>
 
 @novinzabanbot
 """, parse_mode='HTML')
+#                 message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
+# تلفظ 👆   
+# ➖➖➖➖➖➖➖➖➖
+# <pre>ترجمه:
+# {word_translate}</pre>
+
+# @novinzabanbot
+# """, parse_mode='HTML')
             else:
                 results = {}
                 thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
