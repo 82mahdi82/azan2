@@ -751,6 +751,8 @@ def handel_text(m):
 def send_music(m):
     cid=m.chat.id
     text=m.text
+    message_=bot.send_message(cid,"درحال ترجمه 🔄")
+    mid=message_.message_id
     text_fot_trean[cid]=text
     if dict_cid_language_source[cid]=="اوتوماتیک":
         check=text.split(" ")[0]
@@ -797,6 +799,7 @@ def send_music(m):
 """, parse_mode='HTML')
                 chanel=bot.copy_message(channel_id,cid,message.message_id)
                 databases.insert_translations(text,source_language,language,chanel.message_id)
+                bot.delete_message(cid,mid)
                 return
             else:
                 path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
@@ -810,6 +813,7 @@ def send_music(m):
 """, parse_mode='HTML') 
                 chanel=bot.copy_message(channel_id,cid,message.message_id)   
                 databases.insert_translations(text,source_language,language,chanel.message_id)
+                bot.delete_message(cid,mid)
                 return  
         else:
             if len(word_translate)>100:
@@ -818,12 +822,13 @@ def send_music(m):
                 # thread1.start()
                 # thread1.join()
                 # result2 = results["vois"]
-                message=bot.send_message(cid,f"""
+                message=bot.edit_message_text(f"""
 <pre>ترجمه:
 {word_translate}</pre>
 
 @novinzabanbot
-""", parse_mode='HTML')
+""",cid,mid, parse_mode='HTML')
+                return
 #                 message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
 # تلفظ 👆   
 # ➖➖➖➖➖➖➖➖➖
@@ -857,6 +862,7 @@ def send_music(m):
 """, parse_mode='HTML')
                     chanel=bot.copy_message(channel_id,cid,message.message_id)
                     databases.insert_translations(text,source_language,language,chanel.message_id)
+                    bot.delete_message(cid,mid)
                     return
                 else:
                     message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
@@ -887,12 +893,12 @@ def send_music(m):
 #             databases.insert_translations(text,source_language,language,chanel.message_id)
 #             return
 #         else:
-        message=bot.send_message(cid,f"""
-ترجمه:
-{word_translate}
+        message=bot.edit_message_text(f"""
+<pre>ترجمه:
+{word_translate}</pre>
 
 @novinzabanbot
-""", parse_mode='HTML')
+""",cid,mid, parse_mode='HTML')
         chanel=bot.copy_message(channel_id,cid,message.message_id)
         databases.insert_translations(text,source_language,language,chanel.message_id)
         return 
