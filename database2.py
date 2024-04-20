@@ -57,7 +57,4 @@ def use_translations(text,language,language_target):
     cnx.commit()
     return dict_product
 
-# create_database()
-# insert_users(5446)
-# insert_users(5446000000)
-# insert_users(5446035663600000)
+
