@@ -49,7 +49,7 @@ def insert_translations(text,language,language_target,mid):
     cnx.commit()
 
 def use_translations(text,language,language_target):
-    cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mDAg9x6Ictcx5MVLnuMf',database="data")
+    cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='myenux_db',database="data")
     cursor = cnx.cursor(dictionary=True)
     cursor.execute(f"select * from translations where text='{text}' AND language='{language}' AND language_target='{language_target}'")   
     dict_product=cursor.fetchall()
