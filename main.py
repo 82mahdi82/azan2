@@ -688,12 +688,13 @@ def send_music(m):
     else:
         source_language=dict_cid_language_source[cid]
 
-    list_info=database2.use_translations(text,source_language,dict_cid_language_dest[cid])
-    if len(list_info)==1:
-        dict_info=list_info[0]
-        bot.copy_message(cid,channel_id,int(dict_info["mid"]))
-        bot.delete_message(cid,mid)
-        return
+    if len(text)<100:
+        list_info=database2.use_translations(text,source_language,dict_cid_language_dest[cid])
+        if len(list_info)==1:
+            dict_info=list_info[0]
+            bot.copy_message(cid,channel_id,int(dict_info["mid"]))
+            bot.delete_message(cid,mid)
+            return
 
     language=dict_cid_language_dest[cid]
     # word_translate=test.translate_word(text_fot_trean[cid],language)
@@ -781,8 +782,6 @@ def send_music(m):
 
 @novinzabanbot
 """,cid,mid, parse_mode='HTML')
-                chanel=bot.copy_message(channel_id,cid,message.message_id)   
-                database2.insert_translations(text,source_language,language,chanel.message_id)
                 return
 
             else:
