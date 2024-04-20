@@ -6,18 +6,18 @@ import test
 import nltk_def
 import os
 import fontic
-import databases
+import database2
 import sait
 import sitetarif
 import test4
 import threading
 
-databases.creat_database_tables()
-
+print("ok")
+database2.create_database()
+database2.insert_users(56464564)
 from nltk.corpus import wordnet
 import nltk
 nltk.download('wordnet')
-
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
@@ -142,7 +142,7 @@ languages_aks = {
     'yi': 'یدیش',
     'yo': 'یوروبا',
     'zu': 'زولو',
-    "اوتوماتیک":'اوتوماتیک'
+    "اتوماتیک":'اتوماتیک'
 }
 
 languages = {
@@ -324,10 +324,11 @@ def is_user_member(user_id, channel_id):
 def command_start(m):
     cid = m.chat.id
     text_fot_trean.setdefault(cid,"")
-    dict_cid_language_source.setdefault(cid,"اوتوماتیک")
+    dict_cid_language_source.setdefault(cid,"اتوماتیک")
 
     if cid != admin:
-        databases.insert_users(cid)
+        # database2.insert_users(5646664564000)
+        database2.insert_users(int(cid))
         markup=ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("ترجمه")
         # if cid in dict_cid_language_dest:
@@ -360,13 +361,13 @@ def call_callback_panel_sends(call):
     count=0  
     count_black=0
     if data[1] =="brodcast":
-        list_user=databases.use_users()
+        list_user=database2.use_users()
         for i in list_user:
             try:
-                bot.copy_message(i,cid,int(data[-1]))
+                bot.copy_message(i["cid"],cid,int(data[-1]))
                 count+=1
             except:
-                databases.delete_users(i)
+                database2.delete_users(i)
                 count_black+=1
                 # print("eror")
         markup=InlineKeyboardMarkup()
@@ -376,13 +377,13 @@ def call_callback_panel_sends(call):
             text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
         bot.edit_message_text(text,cid,mid,reply_markup=markup)
     if data[1] =="forall":
-        list_user=databases.use_users()
+        list_user=database2.use_users()
         for i in list_user:
             try:
-                bot.forward_message(i,cid,int(data[-1]))
+                bot.forward_message(i["cid"],cid,int(data[-1]))
                 count+=1
             except:
-                databases.delete_users(i)
+                database2.delete_users(i)
                 count_black+=1
                 # print("eror")
         markup=InlineKeyboardMarkup()
@@ -480,10 +481,10 @@ def call_callback_panel_amar(call):
     cid = call.message.chat.id
     mid = call.message.message_id
     data = call.data.split("_")[-1]
-    countOfUsers=len(databases.use_users())
+    countOfUsers=len(database2.use_users())
     if countOfUsers>0:
         if data=="amar":
-            countOfUsers=len(databases.use_users())
+            countOfUsers=len(database2.use_users())
             txt = f'آمار کاربران: {countOfUsers} نفر '
             markup=InlineKeyboardMarkup()
             markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
@@ -552,79 +553,6 @@ def languages_def(call):
     markup.add("مترادف و تعریف لغت")
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"زبان شما انتخاب شد\nکلمه یا جمله خود را برای ترجمه ارسال کنید:",reply_markup=markup)
-    # word_translate=test.translate_word(text_fot_trean[cid],language)
-#     if len(text_fot_trean[cid])>499:
-#         word_translate=test.translate_word(text_fot_trean[cid],language)
-#     else:
-#         word_translate=test4.translate_text(text_fot_trean[cid],language,dict_cid_language_source[cid])
-#     try:
-#         print(word_translate)
-#         if len(word_translate.split(" "))==1:
-#             path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
-#             if language=="en":
-#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-# تلفظ 👆   
-# ➖➖➖➖➖➖➖➖➖
-# <pre>ترجمه:
-# {word_translate}</pre>
-# """, parse_mode='HTML')
-
-
-# #                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-# # تلفظ 👆   
-# # ➖➖➖➖➖➖➖➖➖
-# # <pre>فونتیک:
-                
-# # {fontic.get_ipa(word_translate)[0]}</pre>
-# # ➖➖➖➖➖➖➖➖➖
-# # <pre>ترجمه:
-# # {word_translate}</pre>
-# # """, parse_mode='HTML')
-#             else:
-#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-# تلفظ 👆   
-# ➖➖➖➖➖➖➖➖➖
-# <pre>ترجمه:
-# {word_translate}</pre>
-
-# """, parse_mode='HTML')         
-
-#         else:
-#             path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
-#             example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
-#             if example!=None:
-#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-# تلفظ 👆   
-# ➖➖➖➖➖➖➖➖➖
-# <pre>ترجمه:
-# {word_translate}</pre>
-# ➖➖➖➖➖➖➖➖➖
-# مثال:
-# {example}
-# """, parse_mode='HTML')
-#             else:
-#                 bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
-# تلفظ 👆   
-# ➖➖➖➖➖➖➖➖➖
-# <pre>ترجمه:
-# {word_translate}</pre>
-# """, parse_mode='HTML')
-#         os.remove(path_vois)
-#     except:
-#         example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
-#         if example!=None:
-#             bot.send_message(cid,f"""
-# <pre>ترجمه:
-# {word_translate}</pre>
-# ➖➖➖➖➖➖➖➖➖
-# مثال:
-# {example}
-# """, parse_mode='HTML')
-#         else:
-#             bot.send_message(cid,f"""
-# ترجمه:
-# {word_translate}
-# """, parse_mode='HTML')
         
     
 
@@ -647,7 +575,7 @@ def handel_text(m):
     markup=InlineKeyboardMarkup()
     list_murkup=[]
     num=1
-    markup.add(InlineKeyboardButton("اوتوماتیک",callback_data='sulanguage_اوتوماتیک'))
+    markup.add(InlineKeyboardButton("اتوماتیک",callback_data='sulanguage_اتوماتیک'))
     for i in languages:
         if num==15:
             break
@@ -683,7 +611,7 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("✅ترجمه✅")
-    dict_cid_language_source.setdefault(cid,"اوتوماتیک")
+    dict_cid_language_source.setdefault(cid,"اتوماتیک")
     dict_cid_language_dest.setdefault(cid,"en")
 
     if cid in dict_cid_language_dest:
@@ -754,16 +682,17 @@ def send_music(m):
     message_=bot.send_message(cid,"درحال ترجمه 🔄")
     mid=message_.message_id
     text_fot_trean[cid]=text
-    if dict_cid_language_source[cid]=="اوتوماتیک":
+    if dict_cid_language_source[cid]=="اتوماتیک":
         check=text.split(" ")[0]
         source_language=detect_language(check)
     else:
         source_language=dict_cid_language_source[cid]
 
-    list_info=databases.use_translations(text,source_language,dict_cid_language_dest[cid])
+    list_info=database2.use_translations(text,source_language,dict_cid_language_dest[cid])
     if len(list_info)==1:
         dict_info=list_info[0]
-        bot.copy_message(cid,channel_id,int(dict_info[3]))
+        bot.copy_message(cid,channel_id,int(dict_info["mid"]))
+        bot.delete_message(cid,mid)
         return
 
     language=dict_cid_language_dest[cid]
@@ -775,6 +704,7 @@ def send_music(m):
         word_translate=test4.translate_text(text_fot_trean[cid],language,source_language)
     try:
         if len(word_translate.split(" "))==1:
+            print(source_language,language)
             if language=="en":
                 results = {}
                 thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
@@ -798,9 +728,37 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML')
                 chanel=bot.copy_message(channel_id,cid,message.message_id)
-                databases.insert_translations(text,source_language,language,chanel.message_id)
+                database2.insert_translations(text,source_language,language,chanel.message_id)
                 bot.delete_message(cid,mid)
                 return
+            elif source_language=="en" and language=="fa":
+                results = {}
+                thread1 = threading.Thread(target=vois, args=(results,text,source_language))
+                thread2 = threading.Thread(target=def_fontic, args=(results,text))
+                thread1.start()
+                thread2.start()
+                thread1.join()
+                thread2.join()
+                result1 = results["fontic"]
+                result2 = results["vois"]
+                message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+<pre>فونتیک:
+                
+{result1}</pre>
+➖➖➖➖➖➖➖➖➖
+<pre>ترجمه:
+{word_translate}</pre>
+
+@novinzabanbot
+""", parse_mode='HTML')
+                chanel=bot.copy_message(channel_id,cid,message.message_id)
+                database2.insert_translations(text,source_language,language,chanel.message_id)
+                bot.delete_message(cid,mid)
+                return
+            
+
             else:
                 path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
                 message=bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
@@ -812,44 +770,53 @@ def send_music(m):
 @novinzabanbot
 """, parse_mode='HTML') 
                 chanel=bot.copy_message(channel_id,cid,message.message_id)   
-                databases.insert_translations(text,source_language,language,chanel.message_id)
+                database2.insert_translations(text,source_language,language,chanel.message_id)
                 bot.delete_message(cid,mid)
                 return  
         else:
             if len(word_translate)>100:
-                # results = {}
-                # thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
-                # thread1.start()
-                # thread1.join()
-                # result2 = results["vois"]
                 message=bot.edit_message_text(f"""
 <pre>ترجمه:
 {word_translate}</pre>
 
 @novinzabanbot
 """,cid,mid, parse_mode='HTML')
+                chanel=bot.copy_message(channel_id,cid,message.message_id)   
+                database2.insert_translations(text,source_language,language,chanel.message_id)
                 return
-#                 message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
-# تلفظ 👆   
-# ➖➖➖➖➖➖➖➖➖
-# <pre>ترجمه:
-# {word_translate}</pre>
 
-# @novinzabanbot
-# """, parse_mode='HTML')
             else:
-                results = {}
-                thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
-                thread3 = threading.Thread(target=def_example, args=(results,source_language,language,text_fot_trean[cid]))
 
-                thread1.start()
-                thread3.start()
-                thread1.join()
-                thread3.join()
-                result2 = results["vois"]
-                result3 = results["example"]
-                if result3!=None:
+                if source_language=="en" and language=="fa":
+                    results = {}
+                    thread1 = threading.Thread(target=vois, args=(results,text,source_language))
+                    thread1.start()
+                    thread1.join()
+                    result2 = results["vois"]
                     message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
+تلفظ 👆   
+➖➖➖➖➖➖➖➖➖
+<pre>ترجمه:
+{word_translate}</pre>
+
+@novinzabanbot
+""", parse_mode='HTML')
+                    chanel=bot.copy_message(channel_id,cid,message.message_id)
+                    database2.insert_translations(text,source_language,language,chanel.message_id)
+                    bot.delete_message(cid,mid)
+                    return
+                else:
+                    results = {}
+                    thread1 = threading.Thread(target=vois, args=(results,word_translate,language))
+                    thread3 = threading.Thread(target=def_example, args=(results,source_language,language,text_fot_trean[cid]))
+                    thread1.start()
+                    thread3.start()
+                    thread1.join()
+                    thread3.join()
+                    result2 = results["vois"]
+                    result3 = results["example"]
+                    if result3!=None:
+                        message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
@@ -860,12 +827,12 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML')
-                    chanel=bot.copy_message(channel_id,cid,message.message_id)
-                    databases.insert_translations(text,source_language,language,chanel.message_id)
-                    bot.delete_message(cid,mid)
-                    return
-                else:
-                    message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
+                        chanel=bot.copy_message(channel_id,cid,message.message_id)
+                        database2.insert_translations(text,source_language,language,chanel.message_id)
+                        bot.delete_message(cid,mid)
+                        return
+                    else:
+                        message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
@@ -875,7 +842,7 @@ def send_music(m):
 """, parse_mode='HTML')
         os.remove(result2)
         chanel=bot.copy_message(channel_id,cid,message.message_id)
-        databases.insert_translations(text,source_language,language,chanel.message_id)
+        database2.insert_translations(text,source_language,language,chanel.message_id)
         return
     except:
 #         example=sait.example(detect_language(text_fot_trean[cid]),language,text_fot_trean[cid])
@@ -890,7 +857,7 @@ def send_music(m):
 # @novinzabanbot
 # """, parse_mode='HTML')
 #             chanel=bot.copy_message(channel_id,cid,message.message_id)
-#             databases.insert_translations(text,source_language,language,chanel.message_id)
+#             database2.insert_translations(text,source_language,language,chanel.message_id)
 #             return
 #         else:
         message=bot.edit_message_text(f"""
@@ -900,7 +867,7 @@ def send_music(m):
 @novinzabanbot
 """,cid,mid, parse_mode='HTML')
         chanel=bot.copy_message(channel_id,cid,message.message_id)
-        databases.insert_translations(text,source_language,language,chanel.message_id)
+        database2.insert_translations(text,source_language,language,chanel.message_id)
         return 
     
 @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==2)
@@ -955,15 +922,15 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
-    list_user=databases.use_users()
+    list_user=database2.use_users()
     count=0  
     count_black=0
     for i in list_user:
         try:
-            bot.copy_message(i,cid,mid)
+            bot.copy_message(i["cid"],cid,mid)
             count+=1
         except:
-            databases.delete_users(i)
+            database2.delete_users(i)
             count_black+=1
             # print("eror")
     markup=InlineKeyboardMarkup()
@@ -979,15 +946,15 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
-    list_user=databases.use_users()
+    list_user=database2.use_users()
     count=0  
     count_black=0
     for i in list_user:
         try:
-            bot.copy_message(i,cid,mid)
+            bot.copy_message(i["cid"],cid,mid)
             count+=1
         except:
-            databases.delete_users(i)
+            database2.delete_users(i)
             count_black+=1
             # print("eror")
     markup=InlineKeyboardMarkup()

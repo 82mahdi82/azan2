@@ -25,4 +25,5 @@ soupsieve==2.5
 tqdm==4.66.2
 urllib3==2.2.1
 eng_to_ipa==0.0.2
+mysql-connector-python==8.3.0
 
