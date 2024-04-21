@@ -3,7 +3,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeybo
 from datetime import datetime
 from googletrans import Translator
 import test
-import nltk_def
+# import nltk_def
 import os
 import fontic
 import database2
@@ -18,6 +18,15 @@ database2.insert_users(56464564)
 from nltk.corpus import wordnet
 import nltk
 nltk.download('wordnet')
+def get_synonyms(word):
+    synonyms = []
+    for syn in wordnet.synsets(word):
+        for lemma in syn.lemmas():
+            synonyms.append(lemma.name())
+
+    list_=list(set(synonyms))[:10] 
+    text="<pre>" + "<b>مترادف</b>\n"+"\n".join(list_) + "</pre>"
+    return text
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
@@ -631,9 +640,9 @@ def handel_text(m):
     markup.add("ترجمه")
     markup.add('✅مترادف و تعریف لغت✅')
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
-
     bot.send_message(cid,"لطفا برای دریافت تعریف لغت کلمه خود را ارسال کنید:",reply_markup=markup)
     userStep[cid]=2
+
 @bot.message_handler(func=lambda m: m.text=="ارتقا حساب ⬆️")
 def handel_text(m):
     cid=m.chat.id
@@ -874,12 +883,10 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     try:
-        motraadef=nltk_def.get_synonyms(text)
+        motraadef=get_synonyms(text)
         # motraadef="hi\n"
         print(motraadef)
         bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text)+"\n\n"+"@novinzabanbot", parse_mode='HTML')
-   
-
     except:
         bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
 
