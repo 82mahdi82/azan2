@@ -14,10 +14,10 @@ import threading
 
 print("ok")
 database2.create_database()
-database2.insert_users(56464564)
+# database2.insert_users(56464564)
 from nltk.corpus import wordnet
 import nltk
-nltk.download('wordnet')
+# nltk.download('wordnet')
 def get_synonyms(word):
     synonyms = []
     for syn in wordnet.synsets(word):
@@ -883,10 +883,10 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     try:
-        motraadef=get_synonyms(text)
+        # motraadef=get_synonyms(text)
         # motraadef="hi\n"
-        print(motraadef)
-        bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text)+"\n\n"+"@novinzabanbot", parse_mode='HTML')
+        # bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text)+"\n\n"+"@novinzabanbot", parse_mode='HTML')
+        bot.send_message(cid, sitetarif.get_definition(detect_language(text),text)+"\n\n"+"@novinzabanbot", parse_mode='HTML')
     except:
         bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
 
