@@ -11,6 +11,7 @@ import sait
 import sitetarif
 import test4
 import threading
+import y
 
 print("ok")
 database2.create_database()
@@ -277,15 +278,27 @@ def vois(dict_,word_translate,language):
     dict_.setdefault("vois","")
     dict_["vois"]=path_vois
 
+# def def_fontic(dict_,word_translate):
+#     dict_.setdefault("fontic","")
+#     dict_["fontic"]=fontic.get_ipa(word_translate)[0]
+
 def def_fontic(dict_,word_translate):
     dict_.setdefault("fontic","")
-    dict_["fontic"]=fontic.get_ipa(word_translate)[0]
+    dict_["fontic"]=y.fon(word_translate)
 def def_example(dict_,source_language,language,text):
     example=sait.example(source_language,language,text)
     dict_.setdefault("example","")
     dict_["example"]=example
 
+def tatif(dict_,text):
+    rez=sitetarif.get_definition(detect_language(text),text)
+    dict_.setdefault("tarif","")
+    dict_["tarif"]=rez
 
+def motraadef(dict_,text):
+    rez=y.get_synonyms(text)
+    dict_.setdefault("motraadef","")
+    dict_["motraadef"]=rez
 
 def detect_language(text):
     translator = Translator()
@@ -729,7 +742,6 @@ def send_music(m):
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
 <pre>فونتیک:
-                
 {result1}</pre>
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
@@ -755,7 +767,6 @@ def send_music(m):
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
 <pre>فونتیک:
-                
 {result1}</pre>
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
@@ -883,10 +894,21 @@ def send_music(m):
     cid=m.chat.id
     text=m.text
     try:
-        # motraadef=get_synonyms(text)
+        results = {}
+        thread1 = threading.Thread(target=tatif, args=(results,text))
+        thread2 = threading.Thread(target=motraadef, args=(results,text))
+        thread1.start()
+        thread2.start()
+        thread1.join()
+        thread2.join()
+        result1 = results["tarif"]
+        result2 = results["motraadef"]
+        if result2=="no":
+            bot.send_message(cid,'<b>تعریف لغت</b>'+"\n"+result1+"\n\n"+"@novinzabanbot", parse_mode='HTML')
         # motraadef="hi\n"
         # bot.send_message(cid,motraadef +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+ sitetarif.get_definition(detect_language(text),text)+"\n\n"+"@novinzabanbot", parse_mode='HTML')
-        bot.send_message(cid, sitetarif.get_definition(detect_language(text),text)+"\n\n"+"@novinzabanbot", parse_mode='HTML')
+        else:
+            bot.send_message(cid,result2 +"\n"+ "➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖"+"\n"+'<b>تعریف لغت</b>'+"\n"+result1+"\n\n"+"@novinzabanbot", parse_mode='HTML')
     except:
         bot.send_message(cid,"برای کلمه ای که ارسال کردید مترادفی پیدا نشد")
 
