@@ -16,6 +16,7 @@ import y
 import pay
 import pytz
 import amar
+import random
 
 print("ok")
 database2.create_database()
@@ -356,7 +357,12 @@ def command_start(m):
 
     if cid != admin:
         # database2.insert_users(5646664564000)
-        ID='@'+m.from_user.username
+        if m.from_user.username==None:
+            u=random.randint(10000000,999999999)
+            ID='@'+"user"+str(u)
+            bot.send_message(cid,f"یوزرنیم شما برابر است با: {ID}")
+        else:
+            ID='@'+m.from_user.username
         check=database2.insert_users(int(cid),ID,3)
         markup=ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("ترجمه")
@@ -870,7 +876,7 @@ def handel_text(m):
     if int(dict_info["rem"])==0:
         bot.send_message(cid,"اشتراک شما به پایان رسیده است لطفا برای استفاده از ربات در بخش ارتقا حساب پلن خود را خریداری نمایید.")
     else:
-        bot.send_message(cid,f"باقیمانده اشتراک شما {dict_info['rem']} روز است.") #
+        bot.send_message(cid,f"باقیمانده اشتراک شما {dict_info['rem']} روز است.")
 
 
 @bot.message_handler(func=lambda m: m.text=="بیشترین کلمات ترجمه شده 📊")
