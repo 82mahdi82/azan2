@@ -360,7 +360,7 @@ def command_start(m):
         if m.from_user.username==None:
             u=random.randint(10000000,999999999)
             ID='@'+"user"+str(u)
-            bot.send_message(cid,f"یوزرنیم شما برابر است با: {ID}")
+            
         else:
             ID='@'+m.from_user.username
         check=database2.insert_users(int(cid),ID,3)
@@ -378,6 +378,7 @@ def command_start(m):
 لطفا برای استفاده از ربات یکی از گزینه های زیر را انتخاب کنید
 """,reply_markup=markup)
         if check=="yes":
+            bot.send_message(cid,f"یوزرنیم شما برابر است با: {ID}")
             bot.send_message(cid,"هدیه 3 روز استفاده رایگان به شما داده شد میتوانید تا 3 روز به صورت رایگان از ربات استفاده کنید")
     else:
         
