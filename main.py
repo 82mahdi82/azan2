@@ -2,6 +2,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 from datetime import datetime
 from googletrans import Translator
+import threading
 import test
 # import nltk_def
 import os
@@ -12,6 +13,9 @@ import sitetarif
 import test4
 import threading
 import y
+import pay
+import pytz
+import amar
 
 print("ok")
 database2.create_database()
@@ -44,7 +48,9 @@ dict_synonym={}
 dict_opposite={}
 dict_cid_language_dest={}
 dict_cid_language_source={}
+info_change={"cid":0,"id":"i"}
 button_site={}
+dict_price={"status":"no",1:0,3:0,12:0}
 languages_aks = {
     'fa': 'فارسی',
     'en': 'انگلیسی',
@@ -350,30 +356,128 @@ def command_start(m):
 
     if cid != admin:
         # database2.insert_users(5646664564000)
-        database2.insert_users(int(cid))
+        ID='@'+m.from_user.username
+        check=database2.insert_users(int(cid),ID,3)
         markup=ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("ترجمه")
         # if cid in dict_cid_language_dest:
         #     markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}")
         markup.add("مترادف و تعریف لغت")
+        markup.add("بیشترین کلمات ترجمه شده 📊")
+        markup.add("میزان اشتراک باقیمانده 📆")
         markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
         bot.send_message(cid,f"""
 سلام {m.chat.first_name} عزیز 
 به ربات مترجم خوش آمدید
 لطفا برای استفاده از ربات یکی از گزینه های زیر را انتخاب کنید
 """,reply_markup=markup)
+        if check=="yes":
+            bot.send_message(cid,"هدیه 3 روز استفاده رایگان به شما داده شد میتوانید تا 3 روز به صورت رایگان از ربات استفاده کنید")
     else:
         
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
         markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-        markup.add(InlineKeyboardButton("تنظیم دکمه",callback_data="seting"))
+        markup.add(InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
+        markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"))
+        markup.add(InlineKeyboardButton("ویرایش قیمت پلن ها",callback_data="editprice"))
+        markup.add(InlineKeyboardButton("تنظیم دکمه سایت",callback_data="seting"))
         bot.send_message(cid,"""
 سلام ادمین گرامی 
 برای مدیریت بازی از دکمه های زیر استفاده کنید
 """,reply_markup=markup)
 
 #---------------------------------------------------callback------------------------------------------------------------
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("infopay"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    bot.answer_callback_query(call.id,"هنوز خریدی انجام نشده")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("changeeshterak"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_text("برای ویرایش اشتراک کاربر لطفا یوزرنیم کاربر را ارسال کنید (مثال: @test):",cid,mid,reply_markup=markup)
+    userStep[cid]=400
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("editprice"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+    markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+    markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+    if dict_price["status"]=="no":
+        markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+    else:
+        markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_text("برای ویرایش قیمت هر پلن آن را انتخاب کنید:",cid,mid,reply_markup=markup)
+    # bot.delete_message(cid,mid)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("select"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    pelan = int(call.data.split("_")[-1])
+    bot.delete_message(cid,mid)
+    if pelan==1:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"قیمت پلن را به تومن و به صورت عدد انگلیسی ارسال کنید:",reply_markup=markup)
+        userStep[cid]=100  
+    elif pelan==3:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"قیمت پلن را به تومن و به صورت عدد انگلیسی ارسال کنید:",reply_markup=markup)
+        userStep[cid]=101
+    elif pelan==12:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"قیمت پلن را به تومن و به صورت عدد انگلیسی ارسال کنید:",reply_markup=markup)
+        userStep[cid]=102
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("active"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    dict_price['status']="yes"
+    bot.answer_callback_query(call.id,"خرید پلن برای کاربران فعال شد")
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+    markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+    markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+    if dict_price["status"]=="no":
+        markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+    else:
+        markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("deactive"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    dict_price['status']="no"
+    bot.answer_callback_query(call.id,"خرید پلن برای کاربران غیر فعال شد")
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+    markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+    markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+    if dict_price["status"]=="no":
+        markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+    else:
+        markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith("sends"))
 def call_callback_panel_sends(call):
     global userstep
@@ -425,7 +529,10 @@ def call_callback_panel_amar(call):
     markup=InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
     markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-    markup.add(InlineKeyboardButton("تنظیم دکمه",callback_data="seting"))
+    markup.add(InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
+    markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"))
+    markup.add(InlineKeyboardButton("ویرایش قیمت پلن ها",callback_data="editprice"))
+    markup.add(InlineKeyboardButton("تنظیم دکمه سایت",callback_data="seting"))
     bot.edit_message_text("""
 سلام ادمین گرامی 
 برای مدیریت بازی از دکمه های زیر استفاده کنید
@@ -556,6 +663,9 @@ def languages_def(call):
     if cid in dict_cid_language_dest:
         markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
+    markup.add("بیشترین کلمات ترجمه شده 📊")
+    markup.add("میزان اشتراک باقیمانده 📆")
+    
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"زبان شما انتخاب شد\nکلمه یا جمله خود را برای ترجمه ارسال کنید:",reply_markup=markup)
 
@@ -573,6 +683,9 @@ def languages_def(call):
     if cid in dict_cid_language_dest:
         markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
+    markup.add("بیشترین کلمات ترجمه شده 📊")
+    markup.add("میزان اشتراک باقیمانده 📆")
+    
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"زبان شما انتخاب شد\nکلمه یا جمله خود را برای ترجمه ارسال کنید:",reply_markup=markup)
         
@@ -580,6 +693,13 @@ def languages_def(call):
 
 
 
+
+
+# @bot.callback_query_handler(func=lambda call: call.data.startswith("dargah"))
+# def languages_def(call):
+#     cid = call.message.chat.id
+#     mid = call.message.message_id
+#     pelan=int(call.data.split("_")[-1])
 
 
 
@@ -639,6 +759,9 @@ def handel_text(m):
     if cid in dict_cid_language_dest:
         markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
+    markup.add("بیشترین کلمات ترجمه شده 📊")
+    markup.add("میزان اشتراک باقیمانده 📆")
+    
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"برای دریافت ترجمه کلمه یا جمله مورد نظر خود را ارسال کنید",reply_markup=markup)
     userStep[cid]=1
@@ -652,6 +775,9 @@ def handel_text(m):
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
     markup.add('✅مترادف و تعریف لغت✅')
+    markup.add("بیشترین کلمات ترجمه شده 📊")
+    markup.add("میزان اشتراک باقیمانده 📆")
+    
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"لطفا برای دریافت تعریف لغت کلمه خود را ارسال کنید:",reply_markup=markup)
     userStep[cid]=2
@@ -662,13 +788,15 @@ def handel_text(m):
     text=m.text
     mid=m.message_id
     userStep[cid]=0
-    markup=ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("یک ماهه : قیمت 00000 تومان")
-    markup.add("سه ماهه : قیمت 00000 تومان")
-    markup.add("سالیانه : قیمت 00000 تومان")
-    markup.add("منو اصلی 📜")
-    bot.send_message(cid,"برای ارتقا حساب خود یکی از پلن های زیر را انتخاب کنید: ",reply_markup=markup)
-
+    if dict_price['status']=="yes":
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add(f"یک ماهه : قیمت {dict_price[1]} تومان")
+        markup.add(f"سه ماهه : قیمت {dict_price[3]} تومان")
+        markup.add(f"سالیانه : قیمت {dict_price[12]} تومان")
+        markup.add("منو اصلی 📜")
+        bot.send_message(cid,"برای ارتقا حساب خود یکی از پلن های زیر را انتخاب کنید: ",reply_markup=markup)
+    else:
+        bot.send_message(cid,"این بخش در حال حاضر غیر فعال میباشد.")
 
 @bot.message_handler(func=lambda m: m.text=="منو اصلی 📜")
 def handel_text(m):
@@ -681,6 +809,9 @@ def handel_text(m):
     if cid in dict_cid_language_dest:
         markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
+    markup.add("بیشترین کلمات ترجمه شده 📊")
+    markup.add("میزان اشتراک باقیمانده 📆")
+    
     markup.add("ارتقا حساب ⬆️","لینک به سایت 🔗")
     bot.send_message(cid,"منو اصلی",reply_markup=markup)
 @bot.message_handler(func=lambda m: m.text=="لینک به سایت 🔗")
@@ -694,6 +825,66 @@ def handel_text(m):
         markup.add(InlineKeyboardButton(i,url=button_site[i]))
     bot.send_message(cid,'برای مشاهده سایت از دکمه زیر استفاده کنید:',reply_markup=markup)
 
+@bot.message_handler(func=lambda m: m.text.startswith("یک ماهه"))
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    dict_url_pay=pay.payment(int(dict_price[1])*10)
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
+    markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_1"))
+    bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
+
+@bot.message_handler(func=lambda m: m.text.startswith("سه ماهه"))
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    dict_url_pay=pay.payment(int(dict_price[3])*10)
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
+    markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_2"))
+    bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
+
+@bot.message_handler(func=lambda m: m.text.startswith("سالیانه"))
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    dict_url_pay=pay.payment(int(dict_price[12])*10)
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
+    markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_3"))
+    bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
+
+
+
+@bot.message_handler(func=lambda m: m.text=="میزان اشتراک باقیمانده 📆")
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    ID='@'+m.from_user.username
+    dict_info=database2.use_users_id(ID)[0]
+    if int(dict_info["rem"])==0:
+        bot.send_message(cid,"اشتراک شما به پایان رسیده است لطفا برای استفاده از ربات در بخش ارتقا حساب پلن خود را خریداری نمایید.")
+    else:
+        bot.send_message(cid,f"باقیمانده اشتراک شما {dict_info["rem"]} روز است.")
+
+
+@bot.message_handler(func=lambda m: m.text=="بیشترین کلمات ترجمه شده 📊")
+def handel_text(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    list_databas=database2.use_words()
+    list_words=[]
+    for i in list_databas:
+        list_words.append(i["word"])
+    path_png=amar.get_list_words(list_words)
+    bot.send_photo(cid,photo=open(path_png,"rb"),caption="بیشترین کلمات ترجمه شده 📊")
+    
 
 #---------------------------------------------------------userstep---------------------------------------------------
     
@@ -709,6 +900,10 @@ def send_music(m):
         source_language=detect_language(check)
     else:
         source_language=dict_cid_language_source[cid]
+
+    if len(text.split(" "))==1:
+        database2.insert_words(text)
+
 
     if len(text)<100:
         list_info=database2.use_translations(text,source_language,dict_cid_language_dest[cid])
@@ -749,6 +944,7 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML')
+                os.remove(result2)
                 chanel=bot.copy_message(channel_id,cid,message.message_id)
                 database2.insert_translations(text,source_language,language,chanel.message_id)
                 bot.delete_message(cid,mid)
@@ -774,6 +970,7 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML')
+                os.remove(result2)
                 chanel=bot.copy_message(channel_id,cid,message.message_id)
                 database2.insert_translations(text,source_language,language,chanel.message_id)
                 bot.delete_message(cid,mid)
@@ -781,8 +978,8 @@ def send_music(m):
             
 
             else:
-                path_vois=test.play_audio(word_translate.split(" ")[0],word_translate,language)
-                message=bot.send_voice(cid,voice=open(path_vois,'rb'),caption=f"""
+                result2=test.play_audio(word_translate.split(" ")[0],word_translate,language)
+                message=bot.send_voice(cid,voice=open(result2,'rb'),caption=f"""
 تلفظ 👆   
 ➖➖➖➖➖➖➖➖➖
 <pre>ترجمه:
@@ -790,6 +987,7 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML') 
+                os.remove(result2)
                 chanel=bot.copy_message(channel_id,cid,message.message_id)   
                 database2.insert_translations(text,source_language,language,chanel.message_id)
                 bot.delete_message(cid,mid)
@@ -820,6 +1018,7 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML')
+                    os.remove(result2)
                     chanel=bot.copy_message(channel_id,cid,message.message_id)
                     database2.insert_translations(text,source_language,language,chanel.message_id)
                     bot.delete_message(cid,mid)
@@ -846,6 +1045,7 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML')
+                        os.remove(result2)
                         chanel=bot.copy_message(channel_id,cid,message.message_id)
                         database2.insert_translations(text,source_language,language,chanel.message_id)
                         bot.delete_message(cid,mid)
@@ -859,7 +1059,8 @@ def send_music(m):
 
 @novinzabanbot
 """, parse_mode='HTML')
-        os.remove(result2)
+                        os.remove(result2)
+        # os.remove(result2)
         chanel=bot.copy_message(channel_id,cid,message.message_id)
         database2.insert_translations(text,source_language,language,chanel.message_id)
         return
@@ -992,6 +1193,134 @@ def send_music(m):
         text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
     bot.send_message(cid,text,reply_markup=markup)
 
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==100)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    if text.isdigit():
+        dict_price[1]=int(text)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+        markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+        markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+        if dict_price["status"]=="no":
+            markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+        else:
+            markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"""
+                         قیمت پلن یک تغییر کرد
+                         برای ویرایش قیمت هر پلن آن را انتخاب کنید:""",reply_markup=markup)
+        userStep[cid]=0
+    else:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"لطفا قیمت را فقط به صورت عدد انگلیسی ارسال کنید",reply_markup=markup)
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==101)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    if text.isdigit():
+        dict_price[3]=int(text)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+        markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+        markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+        if dict_price["status"]=="no":
+            markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+        else:
+            markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"""
+                         قیمت پلن دو تغییر کرد
+                         برای ویرایش قیمت هر پلن آن را انتخاب کنید:""",reply_markup=markup)
+        userStep[cid]=0
+    else:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"لطفا قیمت را فقط به صورت عدد انگلیسی ارسال کنید",reply_markup=markup)
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==102)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    if text.isdigit():
+        dict_price[12]=int(text)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+        markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+        markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+        if dict_price["status"]=="no":
+            markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+        else:
+            markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"""
+                         قیمت پلن سه تغییر کرد
+                         برای ویرایش قیمت هر پلن آن را انتخاب کنید:""",reply_markup=markup)
+        userStep[cid]=0
+    else:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"لطفا قیمت را فقط به صورت عدد انگلیسی ارسال کنید",reply_markup=markup)
+
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==400)
+def send_music(m):
+    global info_change
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    list_info=database2.use_users_id(text)
+    if len(list_info)==0:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"کاربری با این یوزرنیم داخل ربات وجود ندارد.\nلطفا یک یوزرنیم دیگر ارسال کنید یا با استفاده از دکمه برگشت به پنل خود بازگردید",reply_markup=markup)
+    else:
+        dict_info=list_info[0]
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,f"""
+یوزرنیم کاربر: {dict_info["id"]}
+میزان اشتراک باقیمانده کاربر : {dict_info["rem"]}
+➖➖➖➖➖➖➖➖➖
+برای تغییر میزان اشتراک کاربر لطفا مقدار اشتراکی که برای کاربر در نظر دارید را به صورت عددی ارسال کنید:
+""",reply_markup=markup)
+        info_change['cid']=dict_info["cid"]
+        info_change['id']=dict_info["id"]
+        userStep[cid]=500
+
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==500)
+def send_music(m):
+    global info_change
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    if text.isdigit():
+        rem=int(text)
+        database2.updete_users(info_change['cid'],rem)
+        dict_info=database2.use_users_id(info_change['id'])[0]
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,f"""
+میزان اشتراک کاربر تغییر پیدا کرد
+➖➖➖➖➖➖➖➖➖
+یوزرنیم کاربر: {dict_info["id"]}
+میزان اشتراک باقیمانده کاربر : {dict_info["rem"]}
+""",reply_markup=markup)
+        bot.send_message(int(info_change['cid']),f"کاربر گرامی میزان اشتراک شما توسط ادمین تغییر پیدا کرد \nاشتراک شما {dict_info["rem"]} روز")
+        userStep[cid]=0
+        
+
+    else:
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"لطفا میزان اشراک را فقط به صورت عدد انگلیسی ارسال کنید",reply_markup=markup)
 
 # @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
 # def send_music(m):
@@ -1000,5 +1329,40 @@ def send_music(m):
 #     try:
 #         bot.send_message(cid,nltk_def.get_antonyms(text))
 #     except:
+        
 #         bot.send_message(cid,"برای کلمه ای که ارسال کردید متضادی پیدا نشد")
+
+def check_and_notify_thread():
+    beshe="yes"
+    while True:
+        current_utc_time = datetime.now(pytz.utc)
+        tehran_timezone = pytz.timezone('Asia/Tehran')
+        current_time = current_utc_time.astimezone(tehran_timezone).strftime("%H")
+        print(current_time)
+        if current_time == "10":
+            if beshe=="yes":
+                list_usrs=database2.use_users()
+                print(list_usrs)
+                for dict_info in list_usrs:
+                    remm=int(dict_info["rem"])
+                    if remm>0:
+                        rem=int(dict_info["rem"])-1
+                        database2.updete_users(dict_info["cid"],rem)
+                        if rem==0:
+                            bot.send_message(int(dict_info["cid"],"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید."))
+                    
+                beshe="no"
+        elif current_time == "01":
+            beshe="yes"
+            
+
+        threading.Event().wait(3500)
+
+
+check_thread = threading.Thread(target=check_and_notify_thread)
+check_thread.start()
+
+
+
 bot.infinity_polling()
+
