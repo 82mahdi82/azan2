@@ -41,6 +41,9 @@ channel_id= -1001898964360
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
 chanal_base=-1002029203141
+channel_selse=-1002077197203
+check_cartbecart=True
+cartbecart=True
 senuser={"uid":0}
 list_user_block=[]
 name_saite=""
@@ -387,17 +390,70 @@ def command_start(m):
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
         markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-        markup.add(InlineKeyboardButton("لیست کاربران",callback_data="listusers"))
-        markup.add(InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
-        markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"))
-        markup.add(InlineKeyboardButton("ویرایش قیمت پلن ها",callback_data="editprice"))
-        markup.add(InlineKeyboardButton("تنظیم دکمه سایت",callback_data="seting"))
+        markup.add(InlineKeyboardButton("لیست کاربران",callback_data="listusers"),InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
+        markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"),InlineKeyboardButton("تنظیم دکمه سایت",callback_data="seting"))
+        markup.add(InlineKeyboardButton("ویرایش و فعال سازی قیمت پلن ها",callback_data="editprice"))
         bot.send_message(cid,"""
 سلام ادمین گرامی 
 برای مدیریت بازی از دکمه های زیر استفاده کنید
 """,reply_markup=markup)
 
 #---------------------------------------------------callback------------------------------------------------------------
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("confirmrec"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    data=call.data.split("_")
+    uid=int(data[1])
+    if int(data[-1])==1:
+        rem_old=int(database2.use_users_cid(uid)[0]["rem"])
+        rem=30+rem_old
+        database2.updete_users(uid,rem)
+        message=bot.copy_message(channel_selse,cid,mid)
+        database2.insert_seles(uid,message.message_id)
+        bot.send_message(uid,"کاربر گرامی رسید شما تایید شد و پلن یک ماهه برای شما فعال شد")
+    elif int(data[-1])==2:
+        rem_old=int(database2.use_users_cid(uid)[0]["rem"])
+        rem=90+rem_old
+        database2.updete_users(uid,rem)
+        message=bot.copy_message(channel_selse,cid,mid)
+        database2.insert_seles(uid,message.message_id)
+        bot.send_message(uid,"کاربر گرامی رسید شما تایید شد و پلن سه ماهه برای شما فعال شد")
+    elif int(data[-1])==3:
+        rem_old=int(database2.use_users_cid(uid)[0]["rem"])
+        rem=360+rem_old
+        database2.updete_users(uid,rem)
+        message=bot.copy_message(channel_selse,cid,mid)
+        database2.insert_seles(uid,message.message_id)
+        bot.send_message(uid,"کاربر گرامی رسید شما تایید شد و پلن سالیانه برای شما فعال شد")    
+    bot.delete_message(cid,mid)
+    bot.send_message(cid,"رسید تایید شد و پلن برای کاربر فعال شد")    
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("noconfirmrec"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    data=call.data.split("_")
+    uid=int(data[1])
+    if int(data[-1])==1:
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("انصراف")
+        bot.send_message(uid,"کاربر گرامی رسیدی که ارسال کردر مورد تایید نبود لطفا رسید معتبری ارسال کنید",reply_markup=markup)
+        userStep[uid]=1000
+    elif int(data[-1])==2:
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("انصراف")
+        bot.send_message(uid,"کاربر گرامی رسیدی که ارسال کردر مورد تایید نبود لطفا رسید معتبری ارسال کنید",reply_markup=markup)
+        userStep[uid]=2000
+    elif int(data[-1])==3:
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("انصراف")
+        bot.send_message(uid,"کاربر گرامی رسیدی که ارسال کردر مورد تایید نبود لطفا رسید معتبری ارسال کنید",reply_markup=markup)
+        userStep[uid]=3000  
+    bot.delete_message(cid,mid)
+    bot.send_message(cid,"رسید رد شد")    
+
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("listusers"))
 def call_callback_panel_sends(call):
@@ -458,7 +514,12 @@ def call_callback_panel_sends(call):
 def call_callback_panel_sends(call):
     cid = call.message.chat.id
     mid = call.message.message_id
-    bot.answer_callback_query(call.id,"هنوز خریدی انجام نشده")
+    list_sales=database2.use_selse_list()
+    if len(list_sales)>0:
+        for i in list_sales:
+            bot.copy_message(cid,channel_selse,i["mid"])
+    else:
+        bot.answer_callback_query(call.id,"هنوز خریدی انجام نشده")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("changeeshterak"))
 def call_callback_panel_sends(call):
@@ -471,7 +532,7 @@ def call_callback_panel_sends(call):
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("editprice"))
-def call_callback_panel_sends(call):
+def list_cost_panel(call):
     cid = call.message.chat.id
     mid = call.message.message_id
     markup=InlineKeyboardMarkup()
@@ -482,9 +543,59 @@ def call_callback_panel_sends(call):
         markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
     else:
         markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    
+    if check_cartbecart:
+        markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+    else:
+        markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
     markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
     bot.edit_message_text("برای ویرایش قیمت هر پلن آن را انتخاب کنید:",cid,mid,reply_markup=markup)
     # bot.delete_message(cid,mid)
+
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("paysait"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    check_cartbecart=False
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+    markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+    markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+    if dict_price["status"]=="no":
+        markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+    else:
+        markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    
+    if check_cartbecart:
+        markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+    else:
+        markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("paycartbecart"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    check_cartbecart=True
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton(f"یک ماهه : قیمت {dict_price[1]} تومان",callback_data="select_1"))
+    markup.add(InlineKeyboardButton(f"سه ماهه : قیمت {dict_price[3]} تومان",callback_data="select_3"))
+    markup.add(InlineKeyboardButton(f"سالیانه : قیمت {dict_price[12]} تومان",callback_data="select_12"))
+    if dict_price["status"]=="no":
+        markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
+    else:
+        markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    
+    if check_cartbecart:
+        markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+    else:
+        markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("select"))
 def call_callback_panel_sends(call):
@@ -522,6 +633,10 @@ def call_callback_panel_sends(call):
         markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
     else:
         markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    if check_cartbecart:
+        markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+    else:
+        markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
     markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
     bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
 
@@ -539,6 +654,10 @@ def call_callback_panel_sends(call):
         markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
     else:
         markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+    if check_cartbecart:
+        markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+    else:
+        markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
     markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
     bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
 
@@ -594,11 +713,9 @@ def call_callback_panel_amar(call):
     markup=InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
     markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
-    markup.add(InlineKeyboardButton("لیست کاربران",callback_data="listusers"))
-    markup.add(InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
-    markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"))
-    markup.add(InlineKeyboardButton("ویرایش قیمت پلن ها",callback_data="editprice"))
-    markup.add(InlineKeyboardButton("تنظیم دکمه سایت",callback_data="seting"))
+    markup.add(InlineKeyboardButton("لیست کاربران",callback_data="listusers"),InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
+    markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"),InlineKeyboardButton("تنظیم دکمه سایت",callback_data="seting"))
+    markup.add(InlineKeyboardButton("ویرایش و فعال سازی قیمت پلن ها",callback_data="editprice"))
     bot.edit_message_text("""
 سلام ادمین گرامی 
 برای مدیریت بازی از دکمه های زیر استفاده کنید
@@ -888,8 +1005,8 @@ def handel_text(m):
     else:
         bot.send_message(cid,"این بخش در حال حاضر غیر فعال میباشد.")
 
-@bot.message_handler(func=lambda m: m.text=="منو اصلی 📜")
-def handel_text(m):
+@bot.message_handler(func=lambda m: m.text=="منو اصلی 📜" or m.text=="انصراف")
+def menu_kebord_markup(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
@@ -920,33 +1037,54 @@ def handel_text(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
-    dict_url_pay=pay.payment(int(dict_price[1])*10)
-    markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
-    markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_1"))
-    bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
+    if cartbecart:
+        cart_number=0
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("انصراف")
+        bot.send_message(cid,f"کاربر گرامی لطفا مبلغ {dict_price[1]} تومن را به شماره کارت {cart_number} کارت به کارت کنید و سپس عکس رسید را ارسال کنید.",reply_markup=markup)
+        userStep[cid]=1000
+    else:    
+        dict_url_pay=pay.payment(int(dict_price[1])*10)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
+        markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_1"))
+        bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
 
 @bot.message_handler(func=lambda m: m.text.startswith("سه ماهه"))
 def handel_text(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
-    dict_url_pay=pay.payment(int(dict_price[3])*10)
-    markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
-    markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_2"))
-    bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
+    if cartbecart:
+        cart_number=0
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("انصراف")
+        bot.send_message(cid,f"کاربر گرامی لطفا مبلغ {dict_price[1]} تومن را به شماره کارت {cart_number} کارت به کارت کنید و سپس عکس رسید را ارسال کنید.",reply_markup=markup)
+        userStep[cid]=2000
+    else:  
+        dict_url_pay=pay.payment(int(dict_price[3])*10)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
+        markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_2"))
+        bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
 
 @bot.message_handler(func=lambda m: m.text.startswith("سالیانه"))
 def handel_text(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
-    dict_url_pay=pay.payment(int(dict_price[12])*10)
-    markup=InlineKeyboardMarkup()
-    markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
-    markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_3"))
-    bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
+    if cartbecart:
+        cart_number=0
+        markup=ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add("انصراف")
+        bot.send_message(cid,f"کاربر گرامی لطفا مبلغ {dict_price[1]} تومن را به شماره کارت {cart_number} کارت به کارت کنید و سپس عکس رسید را ارسال کنید.",reply_markup=markup)
+        userStep[cid]=3000
+    else:  
+        dict_url_pay=pay.payment(int(dict_price[12])*10)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("درگاه پرداخت",url=dict_url_pay["url"]))
+        markup.add(InlineKeyboardButton("بررسی",callback_data="estelam_3"))
+        bot.send_message(cid,"برای پرداخت هزینه لطفا از دکمه زیر استفاده کنید و پس از تکمیل پرداخت بر روی دکمه 'بررسی' کلیک کنید.",reply_markup=markup)
 
 
 
@@ -1312,6 +1450,10 @@ def send_music(m):
             markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
         else:
             markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+        if check_cartbecart:
+            markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+        else:
+            markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         bot.send_message(cid,"""
                          قیمت پلن یک تغییر کرد
@@ -1337,6 +1479,10 @@ def send_music(m):
             markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
         else:
             markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+        if check_cartbecart:
+            markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+        else:
+            markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         bot.send_message(cid,"""
                          قیمت پلن دو تغییر کرد
@@ -1362,6 +1508,10 @@ def send_music(m):
             markup.add(InlineKeyboardButton("فعال سازی پلن ها",callback_data="active"))
         else:
             markup.add(InlineKeyboardButton("غیر فعال سازی پلن ها",callback_data="deactive"))
+        if check_cartbecart:
+            markup.add(InlineKeyboardButton("پرداخت: به صورت کارت به کارت",callback_data="paysait"))
+        else:
+            markup.add(InlineKeyboardButton("پرداخت: با زرین پال",callback_data="paycartbecart"))
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         bot.send_message(cid,"""
                          قیمت پلن سه تغییر کرد
@@ -1443,6 +1593,7 @@ def send_music(m):
 def handle_messages(m):
     cid = m.chat.id
     mid=m.message_id
+    # print(m.photo[-1].file_id)
     if get_user_step(cid)==30:
         list_user=database2.use_users()
         count=0  
@@ -1488,8 +1639,43 @@ def handle_messages(m):
         bot.send_message(cid,"پیام شما برای کاربر ارسال شد.")
         senuser['uid']=0
         userStep[cid]=0
-
-
+    
+    elif get_user_step(cid)==1000:
+        mid=m.message_id
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("تایید رسید",callback_data=f"confirmrec_{cid}_1"),InlineKeyboardButton("رد رسید",callback_data=f"noconfirmrec_{cid}_1"))
+        bot.send_photo(admin,m.photo[-1].file_id,f"""
+نام کاربری: {'@'+m.from_user.username}
+پلن یک ماهه 
+قیمت: {dict_price[1]}
+""",reply_markup=markup)
+        bot.send_message(cid,"رسید شما برای ادمین ارسال شده و در اسرع وقت بررسی میشود.")
+        userStep[cid]=0
+        menu_kebord_markup(m)
+    elif get_user_step(cid)==2000:
+        mid=m.message_id
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("تایید رسید",callback_data=f"confirmrec_{cid}_2"),InlineKeyboardButton("رد رسید",callback_data=f"noconfirmrec_{cid}_2"))
+        bot.send_photo(admin,m.photo[-1].file_id,f"""
+نام کاربری: {'@'+m.from_user.username}
+پلن سه ماهه 
+قیمت: {dict_price[3]}
+""",reply_markup=markup)
+        bot.send_message(cid,"رسید شما برای ادمین ارسال شده و در اسرع وقت بررسی میشود.")
+        userStep[cid]=0
+        menu_kebord_markup(m)
+    elif get_user_step(cid)==3000:
+        mid=m.message_id
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("تایید رسید",callback_data=f"confirmrec_{cid}_3"),InlineKeyboardButton("رد رسید",callback_data=f"noconfirmrec_{cid}_3"))
+        bot.send_photo(admin,m.photo[-1].file_id,f"""
+نام کاربری: {'@'+m.from_user.username}
+پلن سالیانه 
+قیمت: {dict_price[12]}
+""",reply_markup=markup)
+        bot.send_message(cid,"رسید شما برای ادمین ارسال شده و در اسرع وقت بررسی میشود.")
+        userStep[cid]=0
+        menu_kebord_markup(m)
 
 # @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
 # def send_music(m):
