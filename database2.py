@@ -30,6 +30,13 @@ def insert_users(cid,id,rem):
     cnx.commit()
     return "no"
 
+def use_users_cid(cid):
+    cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service',database="data")
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute(f"select * from users where cid='{cid}'")  
+    f = cursor.fetchall()
+    return f
+
 def insert_words(word):
     cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service',database="data")
     cursor = cnx.cursor(dictionary=True)
