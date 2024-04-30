@@ -41,6 +41,8 @@ channel_id= -1001898964360
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
 chanal_base=-1002029203141
+senuser={"uid":0}
+list_user_block=[]
 name_saite=""
 userStep={}
 dict_channel={} #{"name":"utl"}
@@ -385,6 +387,7 @@ def command_start(m):
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
         markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
+        markup.add(InlineKeyboardButton("لیست کاربران",callback_data="listusers"))
         markup.add(InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
         markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"))
         markup.add(InlineKeyboardButton("ویرایش قیمت پلن ها",callback_data="editprice"))
@@ -395,6 +398,61 @@ def command_start(m):
 """,reply_markup=markup)
 
 #---------------------------------------------------callback------------------------------------------------------------
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("listusers"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    list_users=database2.use_users()
+    if len(list_users)>0:
+        for user in list_users:
+            markup=InlineKeyboardMarkup()
+            if int(user['cid']) in list_user_block:
+                markup.add(InlineKeyboardButton("آنبلاک کردن",callback_data=f"userunblock_{user['cid']}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{user['cid']}"))
+            else:
+                markup.add(InlineKeyboardButton("بلاک کردن",callback_data=f"userblock_{user['cid']}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{user['cid']}"))
+            bot.send_message(cid,f"""
+یوزرنیم: {user["id"]}
+اشتراک باقی مانده: {user["rem"]} روز
+""",reply_markup=markup)
+    else:
+        bot.answer_callback_query(call.id,"هنوز کاربری وجود ندارد")
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("userblock"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    uid=int(call.data.split("_")[-1])
+    list_user_block.append(uid)
+    bot.answer_callback_query(call.id,"کاربر بلاک شد")
+    bot.send_message(uid,"کاربر گرامی شما از سمت ادمین بلاک شدید")
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("آنبلاک کردن",callback_data=f"userunblock_{uid}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{uid}"))
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("userunblock"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    uid=int(call.data.split("_")[-1])
+    list_user_block.remove(uid)
+    bot.answer_callback_query(call.id,"کاربر آنبلاک شد")
+    bot.send_message(uid,"کاربر گرامی شما از سمت ادمین آنبلاک شدید")
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بلاک کردن",callback_data=f"userblock_{uid}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{uid}"))
+    bot.edit_message_reply_markup(cid,mid,reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith("senuser"))
+def call_callback_panel_sends(call):
+    cid = call.message.chat.id
+    mid = call.message.message_id
+    uid=int(call.data.split("_")[-1])
+    senuser["uid"]=uid
+    markup=InlineKeyboardMarkup()
+    markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+    bot.send_message(cid,"پیام خود را برای ارسال به کاربر ارسال کنید:",reply_markup=markup)
+    userStep[cid]=600
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("infopay"))
 def call_callback_panel_sends(call):
@@ -536,6 +594,7 @@ def call_callback_panel_amar(call):
     markup=InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('آمار تمامی کاربران',callback_data='panel_amar'))
     markup.add(InlineKeyboardButton('ارسال همگانی',callback_data='panel_brodcast'),InlineKeyboardButton('فوروارد همگانی',callback_data='panel_forall'))
+    markup.add(InlineKeyboardButton("لیست کاربران",callback_data="listusers"))
     markup.add(InlineKeyboardButton("تغییر میزان اشتراک کاربران",callback_data="changeeshterak"))
     markup.add(InlineKeyboardButton("اطلاعات خریداران",callback_data="infopay"))
     markup.add(InlineKeyboardButton("ویرایش قیمت پلن ها",callback_data="editprice"))
@@ -721,6 +780,12 @@ def handel_text(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
+    if cid in list_user_block:
+        bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
+        return
+    if int(database2.use_users_cid(cid)[0]["rem"])==0:
+        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+        return
     markup=InlineKeyboardMarkup()
     list_murkup=[]
     num=1
@@ -739,6 +804,12 @@ def handel_text(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
+    if cid in list_user_block:
+        bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
+        return
+    if int(database2.use_users_cid(cid)[0]["rem"])==0:
+        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+        return
     markup=InlineKeyboardMarkup()
     list_murkup=[]
     num=1
@@ -758,6 +829,12 @@ def handel_text(m):
     text=m.text
     mid=m.message_id
     userStep[cid]=0
+    if cid in list_user_block:
+        bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
+        return
+    if int(database2.use_users_cid(cid)[0]["rem"])==0:
+        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+        return
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("✅ترجمه✅")
     dict_cid_language_source.setdefault(cid,"اتوماتیک")
@@ -779,6 +856,12 @@ def handel_text(m):
     text=m.text
     mid=m.message_id
     userStep[cid]=0
+    if cid in list_user_block:
+        bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
+        return
+    if int(database2.use_users_cid(cid)[0]["rem"])==0:
+        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+        return
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
     markup.add('✅مترادف و تعریف لغت✅')
@@ -813,8 +896,8 @@ def handel_text(m):
     userStep[cid]=0
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
-    if cid in dict_cid_language_dest:
-        markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
+    # if cid in dict_cid_language_dest:
+    #     markup.add(f"ترجمه به: {languages_aks[dict_cid_language_dest[cid]]}",f"ترجمه از: {languages_aks[dict_cid_language_source[cid]]}")
     markup.add("مترادف و تعریف لغت")
     markup.add("بیشترین کلمات ترجمه شده 📊")
     markup.add("میزان اشتراک باقیمانده 📆")
@@ -899,6 +982,12 @@ def handel_text(m):
 def send_music(m):
     cid=m.chat.id
     text=m.text
+    if cid in list_user_block:
+        bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
+        return
+    if int(database2.use_users_cid(cid)[0]["rem"])==0:
+        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+        return
     message_=bot.send_message(cid,"درحال ترجمه 🔄")
     mid=message_.message_id
     text_fot_trean[cid]=text
@@ -1101,6 +1190,12 @@ def send_music(m):
 def send_music(m):
     cid=m.chat.id
     text=m.text
+    if cid in list_user_block:
+        bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
+        return
+    if int(database2.use_users_cid(cid)[0]["rem"])==0:
+        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+        return
     try:
         results = {}
         thread1 = threading.Thread(target=tatif, args=(results,text))
@@ -1175,6 +1270,7 @@ def send_music(m):
     if count_black!=0:
         text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
     bot.send_message(cid,text,reply_markup=markup)
+    userStep[cid]=0
 
 
 @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==31)
@@ -1199,6 +1295,7 @@ def send_music(m):
     if count_black!=0:
         text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
     bot.send_message(cid,text,reply_markup=markup)
+    userStep[cid]=0
 
 @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==100)
 def send_music(m):
@@ -1328,6 +1425,71 @@ def send_music(m):
         markup=InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
         bot.send_message(cid,"لطفا میزان اشراک را فقط به صورت عدد انگلیسی ارسال کنید",reply_markup=markup)
+
+
+@bot.message_handler(func=lambda m: get_user_step(m.chat.id)==600)
+def send_music(m):
+    cid=m.chat.id
+    text=m.text
+    mid=m.message_id
+    bot.send_message(senuser['uid'],"پیام از سمت ادمین")
+    bot.copy_message(senuser['uid'],cid,mid)
+    bot.send_message(cid,"پیام شما برای کاربر ارسال شد.")
+    senuser['uid']=0
+    userStep[cid]=0
+
+
+@bot.message_handler(content_types=['photo', 'voice', 'sticker','animation'])
+def handle_messages(m):
+    cid = m.chat.id
+    mid=m.message_id
+    if get_user_step(cid)==30:
+        list_user=database2.use_users()
+        count=0  
+        count_black=0
+        for i in list_user:
+            try:
+                bot.copy_message(i["cid"],cid,mid)
+                count+=1
+            except:
+                database2.delete_users(i)
+                count_black+=1
+                # print("eror")
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        text=f"به {count} نفر ارسال شد"
+        if count_black!=0:
+            text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
+        bot.send_message(cid,text,reply_markup=markup)
+        userStep[cid]=0
+    elif get_user_step(cid)==31:
+        list_user=database2.use_users()
+        count=0  
+        count_black=0
+        for i in list_user:
+            try:
+                bot.copy_message(i["cid"],cid,mid)
+                count+=1
+            except:
+                database2.delete_users(i)
+                count_black+=1
+                # print("eror")
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        text=f"به {count} نفر ارسال شد"
+        if count_black!=0:
+            text=f"\n و به {count_black} نفر ارسال نشد احتمالا ربات را بلاک کرده اند و از دیتابیس ما حذف میشوند \n"
+        bot.send_message(cid,text,reply_markup=markup)
+        userStep[cid]=0
+    elif get_user_step(cid)==600:
+        mid=m.message_id
+        bot.send_message(senuser['uid'],"پیام از سمت ادمین")
+        bot.copy_message(senuser['uid'],cid,mid)
+        bot.send_message(cid,"پیام شما برای کاربر ارسال شد.")
+        senuser['uid']=0
+        userStep[cid]=0
+
+
 
 # @bot.message_handler(func=lambda m: get_user_step(m.chat.id)==3)
 # def send_music(m):
