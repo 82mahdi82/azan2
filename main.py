@@ -36,12 +36,13 @@ def get_synonyms(word):
 
 TOKEN ='5067354118:AAEJmoFKEX8wifnCKPZXHS7YXE-CdaNAY8I'
 
-admin=120389165
+admin=748626808 #120389165
 channel_id= -1001898964360
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
 chanal_base=-1002029203141
 channel_selse=-1002077197203
+# no_eshterak=True
 check_cartbecart=True
 cartbecart=True
 senuser={"uid":0}
@@ -384,7 +385,7 @@ def command_start(m):
 """,reply_markup=markup)
         if check=="yes":
             bot.send_message(cid,f"یوزرنیم شما برابر است با: {ID}")
-            bot.send_message(cid,"هدیه 3 روز استفاده رایگان به شما داده شد میتوانید تا 3 روز به صورت رایگان از ربات استفاده کنید")
+            bot.send_message(cid,"هدیه 3 روز اشتراک رایگان به شما داده شد")
     else:
         
         markup=InlineKeyboardMarkup()
@@ -461,17 +462,51 @@ def call_callback_panel_sends(call):
     mid = call.message.message_id
     list_users=database2.use_users()
     if len(list_users)>0:
-        for user in list_users:
-            markup=InlineKeyboardMarkup()
-            if int(user['cid']) in list_user_block:
-                markup.add(InlineKeyboardButton("آنبلاک کردن",callback_data=f"userunblock_{user['cid']}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{user['cid']}"))
-            else:
-                markup.add(InlineKeyboardButton("بلاک کردن",callback_data=f"userblock_{user['cid']}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{user['cid']}"))
-            bot.send_message(cid,f"""
-یوزرنیم: {user["id"]}
-اشتراک باقی مانده: {user["rem"]} روز
-""",reply_markup=markup)
-    else:
+        
+        num=0
+        if len(list_users)%100==0:
+            tedad=int(len(list_users)/100)
+        else:
+            tedad=int(len(list_users)/100)+1
+        list_100_user=[]
+        for i in range(tedad):
+            list_=[]
+            print(100*i,(100*i)+100)
+            for user in list_users[100*i:(100*i)+100]:
+                list_.append(user["id"])
+            list_100_user.append(list_)
+        for b in list_100_user:
+            text=""
+            for c in b:
+                text+=c+"  "
+            bot.send_message(cid,text)
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"برای بازگشت به پنل ادمین از دکمه زیر استفاده کنید.",reply_markup=markup)
+        bot.delete_message(cid,mid)
+
+
+
+                
+
+
+        #     list_100_user.append(user["id"])
+        # for i in list_100_user:
+
+        
+
+
+#         for user in list_users:
+#             markup=InlineKeyboardMarkup()
+#             if int(user['cid']) in list_user_block:
+#                 markup.add(InlineKeyboardButton("آنبلاک کردن",callback_data=f"userunblock_{user['cid']}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{user['cid']}"))
+#             else:
+#                 markup.add(InlineKeyboardButton("بلاک کردن",callback_data=f"userblock_{user['cid']}"),InlineKeyboardButton("پیام به کاربر",callback_data=f"senuser_{user['cid']}"))
+#             bot.send_message(cid,f"""
+# یوزرنیم: {user["id"]}
+# اشتراک باقی مانده: {user["rem"]} روز
+# """,reply_markup=markup)
+    else: 
         bot.answer_callback_query(call.id,"هنوز کاربری وجود ندارد")
 
 
@@ -518,6 +553,9 @@ def call_callback_panel_sends(call):
     if len(list_sales)>0:
         for i in list_sales:
             bot.copy_message(cid,channel_selse,i["mid"])
+        markup=InlineKeyboardMarkup()
+        markup.add(InlineKeyboardButton("بازگشت به پنل",callback_data="back_panel"))
+        bot.send_message(cid,"برای بازگشت به پنل ادمین از دکمه زیر استفاده کنید.",reply_markup=markup)
     else:
         bot.answer_callback_query(call.id,"هنوز خریدی انجام نشده")
 
@@ -900,9 +938,10 @@ def handel_text(m):
     if cid in list_user_block:
         bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
         return
-    if int(database2.use_users_cid(cid)[0]["rem"])==0:
-        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
-        return
+    if dict_price['status']=="yes":
+        if int(database2.use_users_cid(cid)[0]["rem"])==0:
+            bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+            return
     markup=InlineKeyboardMarkup()
     list_murkup=[]
     num=1
@@ -924,9 +963,10 @@ def handel_text(m):
     if cid in list_user_block:
         bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
         return
-    if int(database2.use_users_cid(cid)[0]["rem"])==0:
-        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
-        return
+    if dict_price['status']=="yes":
+        if int(database2.use_users_cid(cid)[0]["rem"])==0:
+            bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+            return
     markup=InlineKeyboardMarkup()
     list_murkup=[]
     num=1
@@ -949,9 +989,10 @@ def handel_text(m):
     if cid in list_user_block:
         bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
         return
-    if int(database2.use_users_cid(cid)[0]["rem"])==0:
-        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
-        return
+    if dict_price['status']=="yes":
+        if int(database2.use_users_cid(cid)[0]["rem"])==0:
+            bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+            return
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("✅ترجمه✅")
     dict_cid_language_source.setdefault(cid,"اتوماتیک")
@@ -976,9 +1017,10 @@ def handel_text(m):
     if cid in list_user_block:
         bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
         return
-    if int(database2.use_users_cid(cid)[0]["rem"])==0:
-        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
-        return
+    if dict_price['status']=="yes":
+        if int(database2.use_users_cid(cid)[0]["rem"])==0:
+            bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+            return
     markup=ReplyKeyboardMarkup(resize_keyboard=True)
     markup.add("ترجمه")
     markup.add('✅مترادف و تعریف لغت✅')
@@ -1093,8 +1135,11 @@ def handel_text(m):
     cid=m.chat.id
     text=m.text
     mid=m.message_id
-    ID='@'+m.from_user.username
-    dict_info=database2.use_users_id(ID)[0]
+    if dict_price['status']=="no":
+        bot.send_message(cid,"در حال حاضر استفاده از ربات رایگان است.")
+        return
+    # ID='@'+m.from_user.username
+    dict_info=database2.use_users_cid(cid)[0]
     if int(dict_info["rem"])==0:
         bot.send_message(cid,"اشتراک شما به پایان رسیده است لطفا برای استفاده از ربات در بخش ارتقا حساب پلن خود را خریداری نمایید.")
     else:
@@ -1123,9 +1168,10 @@ def send_music(m):
     if cid in list_user_block:
         bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
         return
-    if int(database2.use_users_cid(cid)[0]["rem"])==0:
-        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
-        return
+    if dict_price['status']=="yes":
+        if int(database2.use_users_cid(cid)[0]["rem"])==0:
+            bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+            return
     message_=bot.send_message(cid,"درحال ترجمه 🔄")
     mid=message_.message_id
     text_fot_trean[cid]=text
@@ -1331,9 +1377,10 @@ def send_music(m):
     if cid in list_user_block:
         bot.send_message(cid,"کاربر گرامی شما از سمت ادمین بلاک شده اید")
         return
-    if int(database2.use_users_cid(cid)[0]["rem"])==0:
-        bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
-        return
+    if dict_price['status']=="yes":
+        if int(database2.use_users_cid(cid)[0]["rem"])==0:
+            bot.send_message(cid,"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید.")
+            return
     try:
         results = {}
         thread1 = threading.Thread(target=tatif, args=(results,text))
@@ -1421,7 +1468,7 @@ def send_music(m):
     count_black=0
     for i in list_user:
         try:
-            bot.copy_message(i["cid"],cid,mid)
+            bot.forward_message(i["cid"],cid,mid)
             count+=1
         except:
             database2.delete_users(i)
@@ -1619,7 +1666,7 @@ def handle_messages(m):
         count_black=0
         for i in list_user:
             try:
-                bot.copy_message(i["cid"],cid,mid)
+                bot.forward_message(i["cid"],cid,mid)
                 count+=1
             except:
                 database2.delete_users(i)
@@ -1690,25 +1737,26 @@ def handle_messages(m):
 def check_and_notify_thread():
     beshe="yes"
     while True:
-        current_utc_time = datetime.now(pytz.utc)
-        tehran_timezone = pytz.timezone('Asia/Tehran')
-        current_time = current_utc_time.astimezone(tehran_timezone).strftime("%H")
-        print(current_time)
-        if current_time == "10":
-            if beshe=="yes":
-                list_usrs=database2.use_users()
-                print(list_usrs)
-                for dict_info in list_usrs:
-                    remm=int(dict_info["rem"])
-                    if remm>0:
-                        rem=int(dict_info["rem"])-1
-                        database2.updete_users(dict_info["cid"],rem)
-                        if rem==0:
-                            bot.send_message(int(dict_info["cid"],"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید."))
-                    
-                beshe="no"
-        elif current_time == "01":
-            beshe="yes"
+        if dict_price['status']=="yes":
+            current_utc_time = datetime.now(pytz.utc)
+            tehran_timezone = pytz.timezone('Asia/Tehran')
+            current_time = current_utc_time.astimezone(tehran_timezone).strftime("%H")
+            print(current_time)
+            if current_time == "10":
+                if beshe=="yes":
+                    list_usrs=database2.use_users()
+                    print(list_usrs)
+                    for dict_info in list_usrs:
+                        remm=int(dict_info["rem"])
+                        if remm>0:
+                            rem=int(dict_info["rem"])-1
+                            database2.updete_users(dict_info["cid"],rem)
+                            if rem==0:
+                                bot.send_message(int(dict_info["cid"],"کاربر گرامی اشتراک شما به پایان رسید لطفا برای استفاده از ربات در بخش ارتقا حساب پلن مورد نظر را خریداری فرمایید."))
+                        
+                    beshe="no"
+            elif current_time == "01":
+                beshe="yes"
             
 
         threading.Event().wait(3500)
