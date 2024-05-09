@@ -3,7 +3,7 @@ import time
 def create_database():
     cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service')
     cursor = cnx.cursor()
-    cursor.execute("DROP database IF EXISTS data")
+    #cursor.execute("DROP database IF EXISTS data")
     cursor.execute("create database if not exists data")
     cursor.execute("use data")
     cursor.execute("CREATE TABLE IF NOT EXISTS users(cid VARCHAR(100),id VARCHAR(100),rem int(100))")

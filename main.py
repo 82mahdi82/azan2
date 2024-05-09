@@ -41,7 +41,7 @@ channel_video=-1002146375544
 channel_maghale=-1002028086764
 
 
-admin=748626808 #120389165
+admin=120389165
 channel_id= -1001898964360
 channel1_id = -1002016755212  # Replace with your channel1 ID
 channel2_id = -1001992750806  # Replace with your channel2 ID
