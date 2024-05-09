@@ -3,7 +3,7 @@ import time
 def create_database():
     cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service')
     cursor = cnx.cursor()
-    #cursor.execute("DROP database IF EXISTS data")
+    cursor.execute("DROP database IF EXISTS data")
     cursor.execute("create database if not exists data")
     cursor.execute("use data")
     cursor.execute("CREATE TABLE IF NOT EXISTS users(cid VARCHAR(100),id VARCHAR(100),rem int(100))")
@@ -13,9 +13,48 @@ def create_database():
                    language_target VARCHAR(50), 
                    mid int(100));""")
     cursor.execute("CREATE TABLE IF NOT EXISTS sales(cid VARCHAR(100),mid int(100))")
+    cursor.execute("""CREATE TABLE IF NOT EXISTS product(
+                   photo_id TEXT, 
+                   id INT AUTO_INCREMENT PRIMARY KEY,
+                   title VARCHAR(500),
+                   details TEXT, 
+                   price INT);""")
     print("created")
     cursor.close()
     cnx.commit()
+
+def insert_product(photo_id,title,details,price):
+    cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service',database="data")
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute(f"insert into product (photo_id,title,details,price) values ('{photo_id}','{title}','{details}',{price});")
+    cursor.close()
+    cnx.commit()
+def use_product():
+    cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service',database="data")
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute(f"select * from product") 
+    dict_product=cursor.fetchall()
+    cursor.close()
+    cnx.commit()
+    return dict_product
+def use_product_id(id):
+    cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service',database="data")
+    cursor = cnx.cursor(dictionary=True)
+    cursor.execute(f"select * from product where id='{id}'")  
+    f = cursor.fetchall()
+    return f
+
+
+
+
+
+
+
+
+
+
+
+
 
 def insert_users(cid,id,rem):
     cnx = mysql.connector.connect(user='root', password='mDAg9x6Ictcx5MVLnuMf',host='mye-nye-service',database="data")
